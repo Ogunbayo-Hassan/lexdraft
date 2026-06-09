@@ -1,0 +1,1980 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LexDraft — Nigerian Legal Document Generator</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+    <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <style>
+      :root {
+        --gold: #c9a84c;
+        --gold-light: #e2c97e;
+        --gold-dark: #9a7530;
+        --radius: 0px;
+        --transition: 0.3s ease;
+      }
+
+      [data-theme="dark"] {
+        --bg: #080808;
+        --bg-card: #111111;
+        --bg-input: #080808;
+        --bg-card2: #1a1a1a;
+        --border: #2d2d2d;
+        --border-hover: rgba(201, 168, 76, 0.5);
+        --text-primary: #f0ede6;
+        --text-secondary: #c8c4bc;
+        --text-muted: #888880;
+        --header-bg: rgba(8, 8, 8, 0.95);
+        --preview-bg: #faf9f5;
+        --preview-text: #111;
+        --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+      }
+
+      [data-theme="light"] {
+        --bg: #f5f3ee;
+        --bg-card: #ffffff;
+        --bg-input: #f9f8f5;
+        --bg-card2: #edeae3;
+        --border: #d4cfc4;
+        --border-hover: rgba(160, 120, 40, 0.5);
+        --text-primary: #1a1814;
+        --text-secondary: #3d3830;
+        --text-muted: #6b6458;
+        --header-bg: rgba(245, 243, 238, 0.95);
+        --preview-bg: #ffffff;
+        --preview-text: #111;
+        --shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+        --gold: #a07828;
+        --gold-light: #b8922e;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text-primary);
+        font-family: "Cormorant Garamond", Georgia, serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+        transition:
+          background var(--transition),
+          color var(--transition);
+      }
+
+      [data-theme="dark"] body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+        opacity: 0.02;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      [data-theme="dark"] body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        background-size: 64px 64px;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ── LAYOUT ── */
+      .container {
+        position: relative;
+        z-index: 1;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 28px;
+      }
+
+      /* ── NAVBAR ── */
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--header-bg);
+        border-bottom: 1px solid var(--border);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        transition: background var(--transition);
+      }
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 28px;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+      }
+      .logo-mark {
+        width: 38px;
+        height: 38px;
+        border: 2px solid var(--gold);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: var(--gold);
+        position: relative;
+        flex-shrink: 0;
+      }
+      .logo-mark::before {
+        content: "";
+        position: absolute;
+        inset: 3px;
+        border: 1px solid var(--gold-dark);
+        opacity: 0.4;
+      }
+      .logo-name {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        color: var(--text-primary);
+        line-height: 1;
+      }
+      .logo-sub {
+        font-size: 10px;
+        color: var(--gold);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        margin-top: 3px;
+        font-family: "DM Sans", sans-serif;
+        font-weight: 500;
+      }
+      .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .nav-link {
+        font-family: "DM Sans", sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        text-decoration: none;
+        padding: 8px 14px;
+        transition: color 0.2s;
+        cursor: pointer;
+        background: none;
+        border: none;
+      }
+      .nav-link:hover {
+        color: var(--gold);
+      }
+      .nav-cta {
+        font-family: "DM Sans", sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--bg);
+        background: var(--gold);
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          transform 0.2s;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .nav-cta:hover {
+        background: var(--gold-light);
+        transform: translateY(-1px);
+      }
+      .theme-toggle {
+        width: 38px;
+        height: 38px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 15px;
+        transition: all 0.2s;
+      }
+      .theme-toggle:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+      }
+
+      /* ── LANDING PAGE ── */
+      #landingPage {
+        display: block;
+      }
+      #appPage {
+        display: none;
+      }
+
+      /* HERO SECTION */
+      .hero-section {
+        padding: 100px 0 80px;
+        text-align: center;
+        animation: fadeUp 0.7s ease both;
+      }
+      .hero-eyebrow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        font-size: 11px;
+        letter-spacing: 0.26em;
+        color: var(--gold);
+        text-transform: uppercase;
+        font-family: "DM Sans", sans-serif;
+        font-weight: 600;
+        margin-bottom: 28px;
+      }
+      .eyebrow-line {
+        width: 44px;
+        height: 1px;
+        background: var(--gold);
+        opacity: 0.5;
+      }
+      .hero-title {
+        font-size: clamp(48px, 8vw, 88px);
+        font-weight: 600;
+        line-height: 1.02;
+        letter-spacing: -0.02em;
+        margin-bottom: 24px;
+        color: var(--text-primary);
+      }
+      .hero-title em {
+        color: var(--gold);
+        font-style: italic;
+        font-weight: 600;
+      }
+      .hero-subtitle {
+        font-size: 20px;
+        color: var(--text-secondary);
+        max-width: 540px;
+        margin: 0 auto 40px;
+        line-height: 1.7;
+        font-weight: 500;
+      }
+      .hero-buttons {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .btn-primary {
+        padding: 16px 36px;
+        background: var(--gold);
+        color: #000;
+        border: none;
+        font-family: "DM Sans", sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .btn-primary:hover {
+        background: var(--gold-light);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(201, 168, 76, 0.3);
+      }
+      .btn-secondary {
+        padding: 16px 36px;
+        background: transparent;
+        color: var(--text-primary);
+        border: 1px solid var(--border);
+        font-family: "DM Sans", sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .btn-secondary:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+      }
+      .hero-note {
+        margin-top: 18px;
+        font-size: 13px;
+        color: var(--text-muted);
+        font-family: "DM Sans", sans-serif;
+        font-weight: 500;
+      }
+      .hero-note i {
+        color: var(--gold);
+        margin-right: 5px;
+      }
+
+      /* STATS BAR */
+      .stats-bar {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0;
+        border: 1px solid var(--border);
+        margin: 60px 0;
+        animation: fadeUp 0.7s 0.15s ease both;
+      }
+      .stat-item {
+        padding: 32px 24px;
+        text-align: center;
+        border-right: 1px solid var(--border);
+        background: var(--bg-card);
+        transition: background var(--transition);
+      }
+      .stat-item:last-child {
+        border-right: none;
+      }
+      .stat-number {
+        font-size: 40px;
+        font-weight: 700;
+        color: var(--gold);
+        line-height: 1;
+        margin-bottom: 6px;
+      }
+      .stat-label {
+        font-size: 13px;
+        color: var(--text-secondary);
+        font-family: "DM Sans", sans-serif;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+      }
+
+      /* HOW IT WORKS */
+      .section {
+        padding: 80px 0;
+        animation: fadeUp 0.7s ease both;
+      }
+      .section-eyebrow {
+        font-size: 11px;
+        letter-spacing: 0.24em;
+        color: var(--gold);
+        text-transform: uppercase;
+        font-family: "DM Sans", sans-serif;
+        font-weight: 600;
+        margin-bottom: 14px;
+      }
+      .section-title {
+        font-size: clamp(32px, 5vw, 52px);
+        font-weight: 600;
+        line-height: 1.1;
+        margin-bottom: 16px;
+        color: var(--text-primary);
+      }
+      .section-subtitle {
+        font-size: 18px;
+        color: var(--text-secondary);
+        line-height: 1.65;
+        font-weight: 500;
+        max-width: 520px;
+      }
+      .steps-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 2px;
+        margin-top: 52px;
+        background: var(--border);
+      }
+      .step-card {
+        background: var(--bg-card);
+        padding: 36px 30px;
+        transition: background var(--transition);
+      }
+      .step-number {
+        width: 44px;
+        height: 44px;
+        border: 2px solid var(--gold);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--gold);
+        margin-bottom: 20px;
+        font-family: "DM Sans", sans-serif;
+      }
+      .step-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: var(--text-primary);
+      }
+      .step-desc {
+        font-size: 15px;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        font-family: "DM Sans", sans-serif;
+        font-weight: 500;
+      }
+
+      /* DOCUMENTS PREVIEW */
+      .docs-preview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 14px;
+        margin-top: 52px;
+      }
+      .doc-preview-card {
+        padding: 26px;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        transition: all 0.25s;
+        position: relative;
+        overflow: hidden;
+      }
+      .doc-preview-card::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        border-style: solid;
+        border-width: 0 22px 22px 0;
+        border-color: transparent var(--border) transparent transparent;
+        transition: border-color 0.25s;
+      }
+      .doc-preview-card:hover {
+        border-color: var(--gold);
+        transform: translateY(-3px);
+        box-shadow: var(--shadow);
+      }
+      .doc-preview-card:hover::after {
+        border-color: transparent var(--gold) transparent transparent;
+      }
+      .doc-preview-icon {
+        font-size: 26px;
+        color: var(--gold);
+        margin-bottom: 14px;
+        display: block;
+      }
+      .doc-preview-name {
+        font-size: 17px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: var(--text-primary);
+      }
+      .doc-preview-desc {
+        font-size: 13px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        font-family: "DM Sans", sans-serif;
+        font-weight: 500;
+      }
+
+      /* WHY LEXDRAFT */
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 14px;
+        margin-top: 52px;
+      }
+      .feature-card {
+        padding: 32px;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        transition: all 0.25s;
+      }
+      .feature-card:hover {
+        border-color: rgba(201, 168, 76, 0.4);
+        box-shadow: var(--shadow);
+      }
+      .feature-icon {
+        width: 48px;
+        height: 48px;
+        border: 1px solid var(--gold);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: var(--gold);
+        margin-bottom: 18px;
+      }
+      .feature-title {
+        font-size: 19px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: var(--text-primary);
+      }
+      .feature-desc {
+        font-size: 15px;
+        color: var(--text-secondary);
+        line-height: 1.65;
+        font-family: "DM Sans", sans-serif;
+        font-weight: 500;
+      }
+
+      /* CTA SECTION */
+      .cta-section {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        padding: 72px 60px;
+        text-align: center;
+        margin: 80px 0;
+        position: relative;
+        overflow: hidden;
+      }
+      .cta-section::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--gold),
+          transparent
+        );
+      }
+      .cta-title {
+        font-size: clamp(32px, 5vw, 52px);
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: var(--text-primary);
+      }
+      .cta-sub {
+        font-size: 18px;
+        color: var(--text-secondary);
+        margin-bottom: 36px;
+        font-family: "DM Sans", sans-serif;
+        font-weight: 500;
+      }
+
+      /* DIVIDER */
+      .divider {
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--border) 30%,
+          var(--border) 70%,
+          transparent
+        );
+        margin: 60px 0;
+      }
+
+      /* ── APP PAGE ── */
+      .app-header {
+        padding: 32px 0 24px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+      .app-title {
+        font-size: 32px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+      .app-subtitle {
+        font-size: 15px;
+        color: var(--text-secondary);
+        margin-top: 4px;
+        font-family: "DM Sans", sans-serif;
+        font-weight: 500;
+      }
+      .back-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: "DM Sans", sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        background: none;
+        border: 1px solid var(--border);
+        padding: 9px 16px;
+        cursor: pointer;
+        transition: all 0.2s;
+        letter-spacing: 0.08em;
+      }
+      .back-btn:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+      }
+
+      /* SECTION LABEL */
+      .section-label {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 10px;
+        letter-spacing: 0.22em;
+        color: var(--gold);
+        text-transform: uppercase;
+        font-family: "DM Sans", sans-serif;
+        font-weight: 600;
+        margin-bottom: 22px;
+      }
+      .section-label::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, var(--border), transparent);
+      }
+
+      /* DOC CARDS */
+      .doc-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 12px;
+        margin-bottom: 48px;
+      }
+      .doc-card {
+        padding: 26px;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        cursor: pointer;
+        transition: all 0.25s;
+        position: relative;
+        overflow: hidden;
+      }
+      .doc-card::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        border-style: solid;
+        border-width: 0 24px 24px 0;
+        border-color: transparent var(--border) transparent transparent;
+        transition: border-color 0.25s;
+      }
+      .doc-card:hover {
+        border-color: var(--border-hover);
+        transform: translateY(-2px);
+        background: var(--bg-card2);
+      }
+      .doc-card.active {
+        border-color: var(--gold);
+        background: var(--bg-card2);
+      }
+      .doc-card.active::after {
+        border-color: transparent var(--gold) transparent transparent;
+      }
+      .doc-icon {
+        font-size: 26px;
+        margin-bottom: 14px;
+        display: block;
+        color: var(--gold);
+      }
+      .doc-name {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: var(--text-primary);
+      }
+      .doc-desc {
+        font-size: 13px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        font-family: "DM Sans", sans-serif;
+        font-weight: 500;
+      }
+      .doc-selected-badge {
+        display: none;
+        margin-top: 12px;
+        font-size: 10px;
+        color: var(--gold);
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-family: "DM Sans", sans-serif;
+        font-weight: 600;
+      }
+      .doc-card.active .doc-selected-badge {
+        display: block;
+      }
+
+      /* FORM */
+      .form-panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        padding: 40px;
+        margin-bottom: 18px;
+        display: none;
+        transition: background var(--transition);
+      }
+      .form-panel.visible {
+        display: block;
+        animation: fadeUp 0.4s ease both;
+      }
+      .form-title {
+        font-size: 26px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: var(--text-primary);
+      }
+      .form-subtitle {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-bottom: 32px;
+        font-family: "DM Sans", sans-serif;
+        font-weight: 500;
+      }
+      .fields-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+        gap: 20px;
+      }
+      .field-full {
+        grid-column: 1 / -1;
+      }
+      .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .field-group label {
+        font-size: 11px;
+        letter-spacing: 0.15em;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-family: "DM Sans", sans-serif;
+        font-weight: 600;
+      }
+      .field-group input,
+      .field-group textarea {
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        padding: 13px 16px;
+        font-size: 16px;
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-weight: 500;
+        outline: none;
+        transition: border-color 0.2s;
+        width: 100%;
+      }
+      .field-group input:focus,
+      .field-group textarea:focus {
+        border-color: var(--gold);
+      }
+      .field-group textarea {
+        resize: vertical;
+        min-height: 96px;
+      }
+      .field-group input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(0.5);
+        cursor: pointer;
+      }
+      [data-theme="dark"]
+        .field-group
+        input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(1) opacity(0.4);
+      }
+
+      /* GENERATE BTN */
+      .generate-btn {
+        width: 100%;
+        margin-top: 32px;
+        padding: 18px;
+        background: var(--gold);
+        color: #000;
+        border: none;
+        font-size: 12px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        font-family: "DM Sans", sans-serif;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+      .generate-btn:hover:not(:disabled) {
+        background: var(--gold-light);
+        transform: translateY(-1px);
+      }
+      .generate-btn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      /* SPINNER */
+      .spinner {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(0, 0, 0, 0.2);
+        border-top-color: #000;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        flex-shrink: 0;
+      }
+
+      /* ERROR */
+      .error-box {
+        background: #160808;
+        border: 1px solid #4a1818;
+        padding: 14px 18px;
+        color: #e07070;
+        font-size: 14px;
+        font-family: "DM Sans", sans-serif;
+        font-weight: 500;
+        margin-top: 16px;
+        display: none;
+        line-height: 1.6;
+      }
+      .error-box.visible {
+        display: block;
+      }
+      [data-theme="light"] .error-box {
+        background: #fff0f0;
+        border-color: #e8a0a0;
+        color: #c03030;
+      }
+
+      /* OUTPUT */
+      .output-panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        padding: 40px;
+        margin-bottom: 18px;
+        display: none;
+      }
+      .output-panel.visible {
+        display: block;
+        animation: fadeUp 0.4s ease both;
+      }
+      .output-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 26px;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+      .output-title {
+        font-size: 22px;
+        font-weight: 600;
+        margin-top: 6px;
+        color: var(--text-primary);
+      }
+      .export-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .export-btn {
+        padding: 10px 18px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text-primary);
+        font-size: 11px;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        font-family: "DM Sans", sans-serif;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .export-btn:hover {
+        background: var(--bg-card2);
+        border-color: var(--text-muted);
+      }
+      .export-btn.gold {
+        border-color: var(--gold);
+        color: var(--gold);
+      }
+      .export-btn.gold:hover {
+        background: rgba(201, 168, 76, 0.1);
+      }
+
+      /* DOCUMENT PREVIEW */
+      .doc-preview {
+        background: var(--preview-bg);
+        color: var(--preview-text);
+        padding: 28px 36px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.35;
+        white-space: pre-wrap;
+        border: 1px solid var(--border);
+        position: relative;
+      }
+      .doc-preview::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: var(--gold);
+        opacity: 0.7;
+      }
+
+      /* LOADING */
+      .loading-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 80px 0;
+        gap: 20px;
+      }
+      .loading-spinner-lg {
+        width: 44px;
+        height: 44px;
+        border: 2px solid var(--border);
+        border-top-color: var(--gold);
+        border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+      }
+      .loading-text {
+        font-size: 11px;
+        color: var(--text-muted);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font-family: "DM Sans", sans-serif;
+        font-weight: 600;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+
+      /* FOOTER */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 28px 0 36px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 13px;
+        color: var(--text-muted);
+        font-family: "DM Sans", sans-serif;
+        font-weight: 500;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      footer .footer-gold {
+        color: var(--gold);
+        letter-spacing: 0.08em;
+      }
+
+      /* WHATSAPP BUTTON */
+      .whatsapp-float {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        z-index: 999;
+        width: 56px;
+        height: 56px;
+        background: #25d366;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        color: #fff;
+        box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+        cursor: pointer;
+        transition: all 0.25s;
+        text-decoration: none;
+        animation: fadeUp 0.8s 0.5s ease both;
+      }
+      .whatsapp-float:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 28px rgba(37, 211, 102, 0.6);
+      }
+      .whatsapp-tooltip {
+        position: fixed;
+        bottom: 94px;
+        right: 28px;
+        z-index: 998;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        padding: 10px 16px;
+        font-size: 13px;
+        font-family: "DM Sans", sans-serif;
+        font-weight: 500;
+        white-space: nowrap;
+        box-shadow: var(--shadow);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+      }
+      .whatsapp-float:hover + .whatsapp-tooltip,
+      .whatsapp-tooltip:hover {
+        opacity: 1;
+      }
+
+      /* DISCLAIMER */
+      .disclaimer {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--gold);
+        padding: 16px 20px;
+        margin: 0 0 32px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        font-family: "DM Sans", sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        line-height: 1.6;
+      }
+      .disclaimer i {
+        color: var(--gold);
+        font-size: 16px;
+        margin-top: 2px;
+        flex-shrink: 0;
+      }
+      .disclaimer strong {
+        color: var(--text-primary);
+      }
+
+      /* ANIMATIONS */
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeDown {
+        from {
+          opacity: 0;
+          transform: translateY(-12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.4;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--bg);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border);
+      }
+      ::selection {
+        background: rgba(201, 168, 76, 0.25);
+      }
+
+      @media (max-width: 768px) {
+        .nav-link {
+          display: none;
+        }
+        .hero-section {
+          padding: 60px 0 50px;
+        }
+        .stats-bar {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .cta-section {
+          padding: 48px 28px;
+        }
+        .form-panel,
+        .output-panel {
+          padding: 28px 20px;
+        }
+        .doc-preview {
+          padding: 32px 24px;
+          font-size: 13px;
+        }
+        .doc-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .export-row {
+          flex-direction: column;
+        }
+        .export-btn {
+          justify-content: center;
+        }
+      }
+      @media (max-width: 480px) {
+        .doc-grid {
+          grid-template-columns: 1fr;
+        }
+        .stats-bar {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ══════════════════════════════════════ NAVBAR ══════════════════════════════════════ -->
+    <nav>
+      <div class="nav-inner">
+        <a class="logo" href="#" onclick="showLanding()">
+          <div class="logo-mark">
+            <i class="fa-solid fa-scale-balanced"></i>
+          </div>
+          <div>
+            <div class="logo-name">LexDraft</div>
+            <div class="logo-sub">Nigerian Legal Documents</div>
+          </div>
+        </a>
+        <div class="nav-right">
+          <button class="nav-link" onclick="scrollToSection('how')">
+            How It Works
+          </button>
+          <button class="nav-link" onclick="scrollToSection('documents')">
+            Documents
+          </button>
+          <button class="nav-link" onclick="scrollToSection('why')">
+            Why LexDraft
+          </button>
+          <button
+            class="theme-toggle"
+            onclick="toggleTheme()"
+            title="Toggle theme"
+          >
+            <i class="fa-solid fa-circle-half-stroke" id="themeIcon"></i>
+          </button>
+          <button class="nav-cta" onclick="showApp()">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Start Drafting
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ══════════════════════════════════════ LANDING PAGE ══════════════════════════════════════ -->
+    <div id="landingPage">
+      <div class="container">
+        <!-- HERO -->
+        <section class="hero-section">
+          <div class="hero-eyebrow">
+            <span class="eyebrow-line"></span>
+            Nigeria's Smart Legal Document Generator
+            <span class="eyebrow-line"></span>
+          </div>
+          <h1 class="hero-title">
+            Legal Documents.<br />
+            <em>Drafted in Seconds.</em>
+          </h1>
+          <p class="hero-subtitle">
+            Generate court-ready Nigerian legal documents instantly — no lawyer
+            needed for simple paperwork. Fast, accurate, and free to try.
+          </p>
+          <div class="hero-buttons">
+            <button class="btn-primary" onclick="showApp()">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Generate a
+              Document
+            </button>
+            <button class="btn-secondary" onclick="scrollToSection('how')">
+              <i class="fa-solid fa-circle-play"></i> See How It Works
+            </button>
+          </div>
+          <p class="hero-note">
+            <i class="fa-solid fa-shield-halved"></i> Free to use &nbsp;·&nbsp;
+            No registration needed &nbsp;·&nbsp; Powered by AI
+          </p>
+        </section>
+
+        <!-- STATS -->
+        <div class="stats-bar">
+          <div class="stat-item">
+            <div class="stat-number">8+</div>
+            <div class="stat-label">Document Types</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">100%</div>
+            <div class="stat-label">Nigerian Law</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">&lt;30s</div>
+            <div class="stat-label">Generation Time</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">Free</div>
+            <div class="stat-label">To Get Started</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- HOW IT WORKS -->
+        <section class="section" id="how">
+          <div class="section-eyebrow">How It Works</div>
+          <h2 class="section-title">
+            Three Steps to a<br /><em style="color: var(--gold)"
+              >Court-Ready Document</em
+            >
+          </h2>
+          <p class="section-subtitle">
+            No legal training required. Just fill in your details and let AI do
+            the rest.
+          </p>
+          <div class="steps-grid">
+            <div class="step-card">
+              <div class="step-number">01</div>
+              <div class="step-title">Choose Document</div>
+              <div class="step-desc">
+                Select from 8 Nigerian legal document types — from Affidavits to
+                Employment Contracts and Deeds of Assignment.
+              </div>
+            </div>
+            <div class="step-card">
+              <div class="step-number">02</div>
+              <div class="step-title">Fill in Details</div>
+              <div class="step-desc">
+                Enter the relevant information using our simple guided form. No
+                legal knowledge needed — just your basic details.
+              </div>
+            </div>
+            <div class="step-card">
+              <div class="step-number">03</div>
+              <div class="step-title">Generate & Export</div>
+              <div class="step-desc">
+                AI instantly generates a properly structured legal document.
+                Download, copy, or print it as PDF in one click.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- DOCUMENTS -->
+        <section class="section" id="documents">
+          <div class="section-eyebrow">Available Documents</div>
+          <h2 class="section-title">
+            8 Essential Nigerian<br /><em style="color: var(--gold)"
+              >Legal Documents</em
+            >
+          </h2>
+          <p class="section-subtitle">
+            All documents are structured according to Nigerian legal standards
+            and court requirements.
+          </p>
+          <div class="docs-preview-grid" id="docsPreviewGrid"></div>
+          <div style="text-align: center; margin-top: 36px">
+            <button class="btn-primary" onclick="showApp()">
+              <i class="fa-solid fa-file-pen"></i> Start Generating Now
+            </button>
+          </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- WHY LEXDRAFT -->
+        <section class="section" id="why">
+          <div class="section-eyebrow">Why LexDraft</div>
+          <h2 class="section-title">
+            Built for<br /><em style="color: var(--gold)"
+              >Everyday Nigerians</em
+            >
+          </h2>
+          <p class="section-subtitle">
+            Legal documents shouldn't be expensive or complicated. LexDraft
+            makes it simple for everyone.
+          </p>
+          <div class="features-grid">
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fa-solid fa-bolt"></i></div>
+              <div class="feature-title">Instant Generation</div>
+              <div class="feature-desc">
+                Get a complete, properly structured legal document in under 30
+                seconds. No waiting, no appointments.
+              </div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fa-solid fa-gavel"></i></div>
+              <div class="feature-title">Nigerian Law Compliant</div>
+              <div class="feature-desc">
+                Every document follows Nigerian legal standards, including
+                proper clauses, jurisdiction references, and court-ready
+                formatting.
+              </div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fa-solid fa-naira-sign"></i>
+              </div>
+              <div class="feature-title">Save Legal Fees</div>
+              <div class="feature-desc">
+                Stop paying ₦10,000–₦50,000 for simple documents. Generate them
+                yourself in seconds for a fraction of the cost.
+              </div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fa-solid fa-moon"></i></div>
+              <div class="feature-title">Light & Dark Mode</div>
+              <div class="feature-desc">
+                Comfortable to use at any time of day. Easily switch between
+                light and dark themes for the best reading experience.
+              </div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fa-solid fa-mobile-screen"></i>
+              </div>
+              <div class="feature-title">Works on Any Device</div>
+              <div class="feature-desc">
+                Fully mobile-friendly. Use LexDraft on your phone, tablet, or
+                desktop — anywhere, anytime.
+              </div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fa-solid fa-hand-holding-heart"></i>
+              </div>
+              <div class="feature-title">Respects Your Faith</div>
+              <div class="feature-desc">
+                Choose your oath preference — Christian, Muslim, or neutral
+                affirmation. Your document reflects your identity.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA SECTION -->
+        <div class="cta-section">
+          <h2 class="cta-title">Ready to Draft Your Document?</h2>
+          <p class="cta-sub">
+            Join thousands of Nigerians who save time and money with LexDraft.
+          </p>
+          <button class="btn-primary" onclick="showApp()">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Your
+            Document — It's Free
+          </button>
+        </div>
+
+        <!-- FOOTER -->
+        <footer>
+          <div>LexDraft © 2026 — Nigerian Legal Document Generator</div>
+          <div
+            style="
+              font-size: 12px;
+              color: var(--text-muted);
+              font-family: &quot;DM Sans&quot;, sans-serif;
+              max-width: 500px;
+              text-align: center;
+            "
+          >
+            <i class="fa-solid fa-circle-info" style="color: var(--gold)"></i>
+            AI-generated documents are drafts only. Always consult a qualified
+            lawyer before official use.
+          </div>
+          <div class="footer-gold">
+            <i class="fa-solid fa-robot"></i> Powered by AI · Built for Nigeria
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════ APP PAGE ══════════════════════════════════════ -->
+    <div id="appPage">
+      <div class="container">
+        <div class="app-header">
+          <div>
+            <div class="app-title">Generate a Document</div>
+            <div class="app-subtitle">
+              Select a document type, fill in your details, and generate
+              instantly
+            </div>
+          </div>
+          <button class="back-btn" onclick="showLanding()">
+            <i class="fa-solid fa-arrow-left"></i> Back to Home
+          </button>
+        </div>
+
+        <div class="disclaimer">
+          <i class="fa-solid fa-circle-info"></i>
+          <div>
+            <strong>Legal Disclaimer:</strong> Documents generated by LexDraft
+            are AI-assisted drafts intended as a starting point. We strongly
+            recommend having a qualified Nigerian lawyer review any document
+            before use in court or for official purposes. LexDraft is not a law
+            firm and does not provide legal advice.
+          </div>
+        </div>
+        <div class="section-label">Select Document Type</div>
+        <div class="doc-grid" id="docGrid"></div>
+
+        <div class="form-panel" id="formPanel">
+          <div class="section-label">Document Details</div>
+          <div class="form-title" id="formTitle"></div>
+          <div class="form-subtitle">
+            Fill in the fields below to generate your document
+          </div>
+          <div class="fields-grid" id="fieldsGrid"></div>
+          <div class="error-box" id="errorBox"></div>
+          <button
+            class="generate-btn"
+            id="generateBtn"
+            onclick="generateDocument()"
+          >
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Document
+          </button>
+        </div>
+
+        <div class="output-panel" id="outputPanel">
+          <div class="output-header">
+            <div>
+              <div class="section-label" style="margin-bottom: 8px">
+                Generated Document
+              </div>
+              <div class="output-title" id="outputTitle"></div>
+            </div>
+            <div class="export-row">
+              <button class="export-btn" onclick="copyDocument(this)">
+                <i class="fa-regular fa-copy"></i> Copy
+              </button>
+              <button class="export-btn" onclick="downloadDocument()">
+                <i class="fa-solid fa-download"></i> TXT
+              </button>
+              <button class="export-btn" onclick="downloadWord()">
+                <i class="fa-solid fa-file-word"></i> Word
+              </button>
+              <button class="export-btn gold" onclick="printDocument()">
+                <i class="fa-solid fa-print"></i> Print / PDF
+              </button>
+            </div>
+          </div>
+          <div id="outputContent"></div>
+        </div>
+
+        <div class="divider"></div>
+        <footer>
+          <div>LexDraft © 2026 — Nigerian Legal Document Generator</div>
+          <div class="footer-gold">
+            <i class="fa-solid fa-robot"></i> Powered by AI · Built for Nigeria
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <script>
+        // ── THEME ──
+        function toggleTheme() {
+          const html = document.documentElement;
+          const isDark = html.getAttribute('data-theme') === 'dark';
+          html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+          document.getElementById('themeIcon').className = isDark ? 'fa-solid fa-moon' : 'fa-solid fa-circle-half-stroke';
+          localStorage.setItem('lexdraft-theme', isDark ? 'light' : 'dark');
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('lexdraft-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeIcon').className = savedTheme === 'light' ? 'fa-solid fa-moon' : 'fa-solid fa-circle-half-stroke';
+
+        // ── PAGE NAVIGATION ──
+        function showApp() {
+          document.getElementById('landingPage').style.display = 'none';
+          document.getElementById('appPage').style.display = 'block';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showLanding() {
+          document.getElementById('landingPage').style.display = 'block';
+          document.getElementById('appPage').style.display = 'none';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function scrollToSection(id) {
+          document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ── DOCUMENTS DATA ──
+        const DOCUMENTS = [
+          {
+            id: "affidavit", label: "Affidavit", icon: '<i class="fa-solid fa-scale-balanced"></i>',
+            desc: "Sworn written statement for legal proceedings",
+            fields: [
+              { id: "deponentName", label: "Full Name of Deponent", type: "text", placeholder: "e.g. Chukwuemeka Obi" },
+              { id: "deponentAge", label: "Age", type: "text", placeholder: "e.g. 35" },
+              { id: "deponentOccupation", label: "Occupation", type: "text", placeholder: "e.g. Civil Servant" },
+              { id: "deponentAddress", label: "Residential Address", type: "textarea", placeholder: "Full residential address...", full: true },
+              { id: "state", label: "State", type: "text", placeholder: "e.g. Lagos State" },
+              { id: "courtName", label: "Court / Authority", type: "text", placeholder: "e.g. High Court of Lagos State" },
+              { id: "deponentStatement", label: "Statement of Facts", type: "textarea", placeholder: "Clearly state the facts being sworn to...", full: true },
+              { id: "date", label: "Date of Swearing", type: "date", placeholder: "" },
+              { id: "religion", label: "Oath Preference", type: "select", placeholder: "", full: false,
+                options: ["Christian — I swear by Almighty God", "Muslim — I swear by Allah", "Neutral — I solemnly and sincerely affirm"] },
+            ]
+          },
+          {
+            id: "tenancy", label: "Tenancy Agreement", icon: '<i class="fa-solid fa-building-columns"></i>',
+            desc: "Residential or commercial tenancy contract",
+            fields: [
+              { id: "landlordName", label: "Landlord Full Name", type: "text", placeholder: "e.g. Adewale Johnson" },
+              { id: "tenantName", label: "Tenant Full Name", type: "text", placeholder: "e.g. Ngozi Okafor" },
+              { id: "landlordAddress", label: "Landlord Address", type: "textarea", placeholder: "Landlord's full address...", full: true },
+              { id: "tenantAddress", label: "Tenant Address", type: "textarea", placeholder: "Tenant's current address...", full: true },
+              { id: "propertyAddress", label: "Property Address", type: "textarea", placeholder: "Address of the property being leased...", full: true },
+              { id: "rentAmount", label: "Annual Rent (₦)", type: "text", placeholder: "e.g. 500,000" },
+              { id: "tenancyDuration", label: "Duration of Tenancy", type: "text", placeholder: "e.g. 1 year" },
+              { id: "commencementDate", label: "Commencement Date", type: "date", placeholder: "" },
+              { id: "specialTerms", label: "Special Terms (optional)", type: "textarea", placeholder: "Any additional conditions...", full: true },
+            ]
+          },
+          {
+            id: "loan", label: "Loan Agreement", icon: '<i class="fa-solid fa-file-contract"></i>',
+            desc: "Formal loan contract between two parties",
+            fields: [
+              { id: "lenderName", label: "Lender Full Name / Company", type: "text", placeholder: "e.g. Emeka Trades Ltd" },
+              { id: "borrowerName", label: "Borrower Full Name", type: "text", placeholder: "e.g. Fatima Bello" },
+              { id: "lenderAddress", label: "Lender Address", type: "textarea", placeholder: "Lender's full address...", full: true },
+              { id: "borrowerAddress", label: "Borrower Address", type: "textarea", placeholder: "Borrower's full address...", full: true },
+              { id: "loanAmount", label: "Loan Amount (₦)", type: "text", placeholder: "e.g. 1,000,000" },
+              { id: "interestRate", label: "Interest Rate (%)", type: "text", placeholder: "e.g. 10" },
+              { id: "repaymentPeriod", label: "Repayment Period", type: "text", placeholder: "e.g. 12 months" },
+              { id: "purpose", label: "Purpose of Loan", type: "textarea", placeholder: "State the purpose clearly...", full: true },
+              { id: "loanDate", label: "Agreement Date", type: "date", placeholder: "" },
+            ]
+          },
+          {
+            id: "poa", label: "Power of Attorney", icon: '<i class="fa-solid fa-stamp"></i>',
+            desc: "Authorize someone to act legally on your behalf",
+            fields: [
+              { id: "donorName", label: "Donor Full Name (Person Giving Power)", type: "text", placeholder: "e.g. Chinonso Eze" },
+              { id: "donorAddress", label: "Donor Address", type: "textarea", placeholder: "Donor's full address...", full: true },
+              { id: "donorOccupation", label: "Donor Occupation", type: "text", placeholder: "e.g. Businessman" },
+              { id: "attorneyName", label: "Attorney Full Name (Person Receiving Power)", type: "text", placeholder: "e.g. Amaka Obi" },
+              { id: "attorneyAddress", label: "Attorney Address", type: "textarea", placeholder: "Attorney's full address...", full: true },
+              { id: "attorneyOccupation", label: "Attorney Occupation", type: "text", placeholder: "e.g. Lawyer" },
+              { id: "powers", label: "Powers Granted", type: "textarea", placeholder: "Describe the specific powers being granted...", full: true },
+              { id: "duration", label: "Duration of Authority", type: "text", placeholder: "e.g. 1 year / Until revoked" },
+              { id: "poaDate", label: "Date", type: "date", placeholder: "" },
+            ]
+          },
+          {
+            id: "employment", label: "Employment Contract", icon: '<i class="fa-solid fa-briefcase"></i>',
+            desc: "Formal hiring agreement between employer and employee",
+            fields: [
+              { id: "employerName", label: "Employer / Company Name", type: "text", placeholder: "e.g. Zenith Tech Ltd" },
+              { id: "employerAddress", label: "Employer Address", type: "textarea", placeholder: "Company's registered address...", full: true },
+              { id: "employeeName", label: "Employee Full Name", type: "text", placeholder: "e.g. Tunde Bakare" },
+              { id: "employeeAddress", label: "Employee Address", type: "textarea", placeholder: "Employee's residential address...", full: true },
+              { id: "jobTitle", label: "Job Title / Position", type: "text", placeholder: "e.g. Software Engineer" },
+              { id: "department", label: "Department", type: "text", placeholder: "e.g. Technology" },
+              { id: "salary", label: "Annual Gross Salary (₦)", type: "text", placeholder: "e.g. 3,600,000" },
+              { id: "startDate", label: "Employment Start Date", type: "date", placeholder: "" },
+              { id: "employmentType", label: "Employment Type", type: "text", placeholder: "e.g. Full-time / Part-time / Contract" },
+              { id: "probation", label: "Probation Period", type: "text", placeholder: "e.g. 3 months" },
+              { id: "duties", label: "Key Duties & Responsibilities", type: "textarea", placeholder: "List the main responsibilities...", full: true },
+              { id: "benefits", label: "Benefits & Allowances (optional)", type: "textarea", placeholder: "e.g. Health insurance, transport allowance...", full: true },
+            ]
+          },
+          {
+            id: "nda", label: "Non-Disclosure Agreement", icon: '<i class="fa-solid fa-user-secret"></i>',
+            desc: "Confidentiality agreement between two parties",
+            fields: [
+              { id: "disclosingParty", label: "Disclosing Party Full Name / Company", type: "text", placeholder: "e.g. Innovate Nigeria Ltd" },
+              { id: "disclosingAddress", label: "Disclosing Party Address", type: "textarea", placeholder: "Full address...", full: true },
+              { id: "receivingParty", label: "Receiving Party Full Name / Company", type: "text", placeholder: "e.g. Chidi Okonkwo" },
+              { id: "receivingAddress", label: "Receiving Party Address", type: "textarea", placeholder: "Full address...", full: true },
+              { id: "purposeOfDisclosure", label: "Purpose of Disclosure", type: "textarea", placeholder: "e.g. Evaluating a potential business partnership...", full: true },
+              { id: "confidentialInfo", label: "Nature of Confidential Information", type: "textarea", placeholder: "e.g. Business plans, financial data, trade secrets...", full: true },
+              { id: "ndaDuration", label: "Duration of Confidentiality", type: "text", placeholder: "e.g. 2 years" },
+              { id: "ndaDate", label: "Agreement Date", type: "date", placeholder: "" },
+            ]
+          },
+          {
+            id: "mou", label: "Memorandum of Understanding", icon: '<i class="fa-solid fa-handshake"></i>',
+            desc: "Formal agreement of intent between organizations",
+            fields: [
+              { id: "party1Name", label: "First Party Full Name / Organization", type: "text", placeholder: "e.g. Lagos State University" },
+              { id: "party1Address", label: "First Party Address", type: "textarea", placeholder: "First party's address...", full: true },
+              { id: "party2Name", label: "Second Party Full Name / Organization", type: "text", placeholder: "e.g. TechBridge Nigeria Ltd" },
+              { id: "party2Address", label: "Second Party Address", type: "textarea", placeholder: "Second party's address...", full: true },
+              { id: "mouPurpose", label: "Purpose of the MOU", type: "textarea", placeholder: "Describe the purpose and background of this agreement...", full: true },
+              { id: "mouScope", label: "Scope of Cooperation", type: "textarea", placeholder: "What both parties agree to do...", full: true },
+              { id: "mouDuration", label: "Duration", type: "text", placeholder: "e.g. 2 years from date of signing" },
+              { id: "mouDate", label: "Date", type: "date", placeholder: "" },
+            ]
+          },
+          {
+            id: "deed", label: "Deed of Assignment", icon: '<i class="fa-solid fa-house-circle-check"></i>',
+            desc: "Transfer of property ownership from one party to another",
+            fields: [
+              { id: "assignorName", label: "Assignor Full Name (Seller/Transferor)", type: "text", placeholder: "e.g. Biodun Adeyemi" },
+              { id: "assignorAddress", label: "Assignor Address", type: "textarea", placeholder: "Assignor's full address...", full: true },
+              { id: "assigneeName", label: "Assignee Full Name (Buyer/Recipient)", type: "text", placeholder: "e.g. Ngozi Okafor" },
+              { id: "assigneeAddress", label: "Assignee Address", type: "textarea", placeholder: "Assignee's full address...", full: true },
+              { id: "propertyDescription", label: "Property Description", type: "textarea", placeholder: "Full description of the property including plot number, location, size...", full: true },
+              { id: "titleDetails", label: "Title / Certificate of Occupancy Details", type: "textarea", placeholder: "e.g. C of O No. 12345, issued by Lagos State Government...", full: true },
+              { id: "consideration", label: "Consideration / Purchase Price (₦)", type: "text", placeholder: "e.g. 15,000,000" },
+              { id: "deedDate", label: "Date of Assignment", type: "date", placeholder: "" },
+            ]
+          }
+        ];
+
+        let selectedDoc = null;
+        let generatedText = "";
+
+        // Render landing page doc preview cards
+        const previewGrid = document.getElementById("docsPreviewGrid");
+        DOCUMENTS.forEach(doc => {
+          const card = document.createElement("div");
+          card.className = "doc-preview-card";
+          card.innerHTML = `
+            <span class="doc-preview-icon">${doc.icon}</span>
+            <div class="doc-preview-name">${doc.label}</div>
+            <div class="doc-preview-desc">${doc.desc}</div>`;
+          card.onclick = () => { showApp(); selectDoc(doc); };
+          previewGrid.appendChild(card);
+        });
+
+        // Render app doc cards
+        const grid = document.getElementById("docGrid");
+        DOCUMENTS.forEach(doc => {
+          const card = document.createElement("div");
+          card.className = "doc-card";
+          card.id = "card-" + doc.id;
+          card.innerHTML = `
+            <span class="doc-icon">${doc.icon}</span>
+            <div class="doc-name">${doc.label}</div>
+            <div class="doc-desc">${doc.desc}</div>
+            <div class="doc-selected-badge"><i class="fa-solid fa-check"></i> Selected</div>`;
+          card.onclick = () => selectDoc(doc);
+          grid.appendChild(card);
+        });
+
+        function selectDoc(doc) {
+          selectedDoc = doc;
+          document.querySelectorAll(".doc-card").forEach(c => c.classList.remove("active"));
+          document.getElementById("card-" + doc.id).classList.add("active");
+          document.getElementById("formTitle").textContent = doc.label;
+
+          const fieldsGrid = document.getElementById("fieldsGrid");
+          fieldsGrid.innerHTML = "";
+          doc.fields.forEach(field => {
+            const group = document.createElement("div");
+            group.className = "field-group" + (field.full ? " field-full" : "");
+            let el;
+            if (field.type === "textarea") {
+              el = `<textarea id="${field.id}" placeholder="${field.placeholder}"></textarea>`;
+            } else if (field.type === "select") {
+              const opts = field.options.map(o => `<option value="${o}">${o}</option>`).join("");
+              el = `<select id="${field.id}" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);padding:13px 16px;font-size:16px;font-family:'Cormorant Garamond',Georgia,serif;font-weight:500;outline:none;width:100%;cursor:pointer;transition:border-color 0.2s;">${opts}</select>`;
+            } else {
+              el = `<input type="${field.type}" id="${field.id}" placeholder="${field.placeholder}" />`;
+            }
+            group.innerHTML = `<label for="${field.id}">${field.label}</label>${el}`;
+            fieldsGrid.appendChild(group);
+          });
+
+          document.getElementById("formPanel").classList.add("visible");
+          document.getElementById("outputPanel").classList.remove("visible");
+          document.getElementById("errorBox").classList.remove("visible");
+          generatedText = "";
+
+          const btn = document.getElementById("generateBtn");
+          btn.disabled = false;
+          btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Generate ${doc.label}`;
+
+          setTimeout(() => document.getElementById("formPanel").scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+        }
+
+        function buildPrompt() {
+          const fieldValues = selectedDoc.fields.map(f => {
+            const el = document.getElementById(f.id);
+            return `${f.label}: ${el?.value?.trim() || "Not provided"}`;
+          }).join("\n");
+
+          const oathEl = document.getElementById("religion");
+          const oathPref = oathEl ? oathEl.value : null;
+          const oathInstruction = oathPref
+            ? `- Oath/Affirmation: Use exactly this form: "${oathPref}". Do NOT use any other religious language.`
+            : "";
+
+          return `You are an expert Nigerian legal document drafter. Generate a complete, formal, court-ready ${selectedDoc.label} based on the details below.
+
+      Details:
+      ${fieldValues}
+
+      Requirements:
+      - Use proper Nigerian legal language and formatting
+      - Include all standard clauses required under Nigerian law for this document type
+      - Include numbered clauses, proper headings, signature blocks, and witness sections
+      - Add governing law clause referencing Nigerian jurisdiction
+      ${oathInstruction}
+      - Output ONLY the finished legal document — no commentary, no explanations
+      - Do NOT use markdown formatting, asterisks (**), hashes (#), or any special symbols for formatting
+      - Use PLAIN TEXT only with proper legal document spacing and capitalization for headings
+      - Keep the document compact and concise — avoid excessive blank lines between sections
+      - Use single line breaks between clauses, not double or triple spacing
+      - The entire document should ideally fit within 1-2 pages when printed
+      - STRICTLY FORBIDDEN: Do NOT use square bracket placeholders like [Name], [Date], [Signature], [Commissioner], [Witness 1], [Witness 2] or anything in square brackets insted use just "______________"
+      - STRICTLY FORBIDDEN: Do NOT use underscores like __________ for any lines
+      - STRICTLY FORBIDDEN: Do NOT use dashes like ----------- as separators between sections
+      - For signature and name lines use ONLY this exact format with underscores:
+        Signature: _______________________
+        Name: _______________________
+        Date: _______________________
+        Address: _______________________
+      - For Commissioner for Oaths, do NOT include their name since it is unknown — just write "Commissioner for Oaths" as the title
+      - For Witnesses, do NOT include placeholder names — just label them "Witness 1" and "Witness 2" with "_______________________" lines for their details
+      - Separate sections with a single blank line only
+      - NEVER put dashes, asterisks, or any line characters under section headings
+      - Section headings should just be written in CAPITALS followed immediately by the content on the next line
+      - Keep the document concise and compact — avoid excessive blank lines between sections
+      - Use single line spacing between clauses, double spacing only between major sections
+
+      Generate the ${selectedDoc.label} now:`;
+        }
+
+        function cleanDocument(text) {
+          return text
+            // Remove ALL bracketed placeholders - catch every variation
+            .replace(/\[Signature[^\]]*\]/gi, "_______________________")
+            .replace(/\[Name[^\]]*\]/gi, "_______________________")
+            .replace(/\[Seal[^\]]*\]/gi, "_______________________")
+            .replace(/\[Date[^\]]*\]/gi, "_______________________")
+            .replace(/\[Address[^\]]*\]/gi, "_______________________")
+            .replace(/\[Witness[^\]]*\]/gi, "_______________________")
+            .replace(/\[Commissioner[^\]]*\]/gi, "_______________________")
+            .replace(/\[[^\]]{1,120}\]/g, "_______________________")
+            // Remove ALL dash-only lines (1 or more dashes, nothing else on the line)
+            .replace(/^-+\s*$/gm, "")
+            // Remove === lines
+            .replace(/^=+\s*$/gm, "")
+            // Remove *** lines
+            .replace(/^\*+\s*$/gm, "")
+            // Remove ___ only lines (underscores as separators, not signature lines)
+            .replace(/^_{20,}\s*$/gm, "")
+            // Remove dot-only separator lines
+            .replace(/^\.{5,}\s*$/gm, "")
+            // Replace inline dots used as fill-in lines with underscores
+            .replace(/\.{6,}/g, "_______________________")
+            // Remove NOTE: disclaimer lines
+            .replace(/^NOTE:.*$/gm, "")
+            // Remove multiple blank lines — max 1 blank line between sections
+            .replace(/
+      {3,}/g, "
+
+      ")
+            .trim();
+        }
+
+        async function generateDocument() {
+          if (!selectedDoc) return;
+          const btn = document.getElementById("generateBtn");
+          const errorBox = document.getElementById("errorBox");
+          const outputPanel = document.getElementById("outputPanel");
+          const outputContent = document.getElementById("outputContent");
+
+          errorBox.classList.remove("visible");
+          btn.disabled = true;
+          btn.innerHTML = `<div class="spinner"></div> Drafting your document...`;
+
+          outputPanel.classList.add("visible");
+          outputContent.innerHTML = `<div class="loading-state"><div class="loading-spinner-lg"></div><div class="loading-text">Drafting your document...</div></div>`;
+          document.getElementById("outputTitle").textContent = selectedDoc.label + " — Draft";
+          setTimeout(() => outputPanel.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+
+          try {
+            const response = await fetch("/api/generate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ messages: [{ role: "user", content: buildPrompt() }] })
+            });
+
+            const data = await response.json();
+            if (data.error) throw new Error(data.error.message);
+
+            generatedText = (data.content || []).map(c => c.text || "").join("").trim();
+            if (!generatedText) throw new Error("Empty response received. Please try again.");
+            generatedText = cleanDocument(generatedText);
+            outputContent.innerHTML = `<div class="doc-preview">${escapeHtml(generatedText)}</div>`;
+
+          } catch (err) {
+            outputPanel.classList.remove("visible");
+            errorBox.innerHTML = `<strong><i class="fa-solid fa-triangle-exclamation"></i> Error:</strong> ${err.message || "Failed to generate. Make sure the server is running and your API key is set."}`;
+            errorBox.classList.add("visible");
+            generatedText = "";
+          }
+
+          btn.disabled = false;
+          btn.innerHTML = `<i class="fa-solid fa-rotate-right"></i> Regenerate ${selectedDoc.label}`;
+        }
+
+        function escapeHtml(str) {
+          return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+        }
+
+        function copyDocument(btn) {
+          if (!generatedText) return;
+          navigator.clipboard.writeText(generatedText).then(() => {
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+            setTimeout(() => btn.innerHTML = orig, 2000);
+          });
+        }
+
+        function downloadDocument() {
+          if (!generatedText) return;
+          const blob = new Blob([generatedText], { type: "text/plain" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = (selectedDoc?.label || "Document").replace(/\s+/g, "_") + "_LexDraft.txt";
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+
+        async function downloadWord() {
+          if (!generatedText) return;
+
+          const { Document, Packer, Paragraph, TextRun, AlignmentType } = docx;
+
+          const lines = generatedText.split("\n");
+
+          const children = lines.map(line => {
+            const trimmed = line.trim();
+
+            // Blank line = empty paragraph
+            if (!trimmed) {
+              return new Paragraph({ children: [new TextRun("")], spacing: { after: 80 } });
+            }
+
+            // Title lines (ALL CAPS, short, no punctuation at end)
+            const isTitle = trimmed === trimmed.toUpperCase() && trimmed.length < 60 && !trimmed.endsWith(".");
+            // Sub-heading (ends with colon)
+            const isSubheading = trimmed.endsWith(":") && trimmed.length < 60;
+            // Numbered clause
+            const isNumbered = /^\d+\./.test(trimmed);
+            // Signature line (underscores)
+            const isSignature = /_{5,}/.test(trimmed);
+
+            if (isTitle && !isNumbered) {
+              return new Paragraph({
+                children: [new TextRun({ text: trimmed, bold: true, size: 24, font: "Times New Roman" })],
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 200, after: 100 }
+              });
+            } else if (isSubheading) {
+              return new Paragraph({
+                children: [new TextRun({ text: trimmed, bold: true, size: 22, font: "Times New Roman" })],
+                spacing: { before: 160, after: 60 }
+              });
+            } else if (isSignature) {
+              return new Paragraph({
+                children: [new TextRun({ text: trimmed, size: 22, font: "Times New Roman" })],
+                spacing: { before: 120, after: 60 }
+              });
+            } else {
+              return new Paragraph({
+                children: [new TextRun({ text: trimmed, size: 22, font: "Times New Roman" })],
+                indent: isNumbered ? { left: 360 } : {},
+                spacing: { after: 60 }
+              });
+            }
+          });
+
+          const doc = new Document({
+            sections: [{
+              properties: {
+                page: {
+                  size: { width: 12240, height: 15840 },
+                  margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 }
+                }
+              },
+              children
+            }]
+          });
+
+          const blob = await Packer.toBlob(doc);
+          saveAs(blob, (selectedDoc?.label || "Document").replace(/\s+/g, "_") + "_LexDraft.docx");
+        }
+
+        function printDocument() {
+          if (!generatedText) return;
+          const win = window.open("", "_blank");
+          win.document.write(`<!DOCTYPE html><html><head>
+            <title>${selectedDoc?.label} — LexDraft</title>
+            <style>
+              body { font-family: Georgia, serif; font-size: 11.5pt; line-height: 1.45; margin: 40px 60px; color: #111; }
+              pre { white-space: pre-wrap; font-family: Georgia, serif; font-weight: 500; }
+              .hdr { text-align:center; border-bottom: 2px solid #111; padding-bottom: 16px; margin-bottom: 40px; }
+              .hdr h2 { font-size: 9pt; letter-spacing: 0.2em; font-weight: 600; text-transform: uppercase; }
+              .hdr h1 { font-size: 16pt; margin-top: 4px; font-weight: 700; }
+              @media print { body { margin: 50px 60px; } }
+            </style></head><body>
+            <div class="hdr">
+              <h2>LexDraft · Nigerian Legal Document Generator</h2>
+              <h1>${selectedDoc?.label}</h1>
+            </div>
+            <pre>${generatedText.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</pre>
+          </body></html>`);
+          win.document.close();
+          win.focus();
+          setTimeout(() => win.print(), 600);
+        }
+    </script>
+    <!-- WHATSAPP FLOATING BUTTON -->
+    <a
+      class="whatsapp-float"
+      href="https://wa.me/2349082448426"
+      target="_blank"
+      title="Chat on WhatsApp"
+    >
+      <i class="fa-brands fa-whatsapp"></i>
+    </a>
+    <div class="whatsapp-tooltip">
+      <i class="fa-brands fa-whatsapp" style="color: #25d366"></i> Chat with us
+      on WhatsApp
+    </div>
+  </body>
+</html>
