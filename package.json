@@ -1,0 +1,15 @@
+{
+  "name": "lexdraft",
+  "version": "1.0.0",
+  "description": "Nigerian Legal Document Generator",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["legal", "nigeria", "documents", "ai"],
+  "author": "LexDraft",
+  "license": "ISC"
+}
