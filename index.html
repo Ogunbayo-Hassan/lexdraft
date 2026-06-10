@@ -12,8 +12,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     />
-    <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
-    <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
     <style>
       :root {
         --gold: #c9a84c;
@@ -1504,464 +1503,1051 @@
     </div>
 
     <script>
-        // ── THEME ──
-        function toggleTheme() {
-          const html = document.documentElement;
-          const isDark = html.getAttribute('data-theme') === 'dark';
-          html.setAttribute('data-theme', isDark ? 'light' : 'dark');
-          document.getElementById('themeIcon').className = isDark ? 'fa-solid fa-moon' : 'fa-solid fa-circle-half-stroke';
-          localStorage.setItem('lexdraft-theme', isDark ? 'light' : 'dark');
-        }
+      // ── THEME ──
+      function toggleTheme() {
+        const html = document.documentElement;
+        const isDark = html.getAttribute("data-theme") === "dark";
+        html.setAttribute("data-theme", isDark ? "light" : "dark");
+        document.getElementById("themeIcon").className = isDark
+          ? "fa-solid fa-moon"
+          : "fa-solid fa-circle-half-stroke";
+        localStorage.setItem("lexdraft-theme", isDark ? "light" : "dark");
+      }
 
-        // Load saved theme
-        const savedTheme = localStorage.getItem('lexdraft-theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        document.getElementById('themeIcon').className = savedTheme === 'light' ? 'fa-solid fa-moon' : 'fa-solid fa-circle-half-stroke';
+      // Load saved theme
+      const savedTheme = localStorage.getItem("lexdraft-theme") || "dark";
+      document.documentElement.setAttribute("data-theme", savedTheme);
+      document.getElementById("themeIcon").className =
+        savedTheme === "light"
+          ? "fa-solid fa-moon"
+          : "fa-solid fa-circle-half-stroke";
 
-        // ── PAGE NAVIGATION ──
-        function showApp() {
-          document.getElementById('landingPage').style.display = 'none';
-          document.getElementById('appPage').style.display = 'block';
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+      // ── PAGE NAVIGATION ──
+      function showApp() {
+        document.getElementById("landingPage").style.display = "none";
+        document.getElementById("appPage").style.display = "block";
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
 
-        function showLanding() {
-          document.getElementById('landingPage').style.display = 'block';
-          document.getElementById('appPage').style.display = 'none';
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+      function showLanding() {
+        document.getElementById("landingPage").style.display = "block";
+        document.getElementById("appPage").style.display = "none";
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
 
-        function scrollToSection(id) {
-          document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+      function scrollToSection(id) {
+        document
+          .getElementById(id)
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
 
-        // ── DOCUMENTS DATA ──
-        const DOCUMENTS = [
-          {
-            id: "affidavit", label: "Affidavit", icon: '<i class="fa-solid fa-scale-balanced"></i>',
-            desc: "Sworn written statement for legal proceedings",
-            fields: [
-              { id: "deponentName", label: "Full Name of Deponent", type: "text", placeholder: "e.g. Chukwuemeka Obi" },
-              { id: "deponentAge", label: "Age", type: "text", placeholder: "e.g. 35" },
-              { id: "deponentOccupation", label: "Occupation", type: "text", placeholder: "e.g. Civil Servant" },
-              { id: "deponentAddress", label: "Residential Address", type: "textarea", placeholder: "Full residential address...", full: true },
-              { id: "state", label: "State", type: "text", placeholder: "e.g. Lagos State" },
-              { id: "courtName", label: "Court / Authority", type: "text", placeholder: "e.g. High Court of Lagos State" },
-              { id: "deponentStatement", label: "Statement of Facts", type: "textarea", placeholder: "Clearly state the facts being sworn to...", full: true },
-              { id: "date", label: "Date of Swearing", type: "date", placeholder: "" },
-              { id: "religion", label: "Oath Preference", type: "select", placeholder: "", full: false,
-                options: ["Christian — I swear by Almighty God", "Muslim — I swear by Allah", "Neutral — I solemnly and sincerely affirm"] },
-            ]
-          },
-          {
-            id: "tenancy", label: "Tenancy Agreement", icon: '<i class="fa-solid fa-building-columns"></i>',
-            desc: "Residential or commercial tenancy contract",
-            fields: [
-              { id: "landlordName", label: "Landlord Full Name", type: "text", placeholder: "e.g. Adewale Johnson" },
-              { id: "tenantName", label: "Tenant Full Name", type: "text", placeholder: "e.g. Ngozi Okafor" },
-              { id: "landlordAddress", label: "Landlord Address", type: "textarea", placeholder: "Landlord's full address...", full: true },
-              { id: "tenantAddress", label: "Tenant Address", type: "textarea", placeholder: "Tenant's current address...", full: true },
-              { id: "propertyAddress", label: "Property Address", type: "textarea", placeholder: "Address of the property being leased...", full: true },
-              { id: "rentAmount", label: "Annual Rent (₦)", type: "text", placeholder: "e.g. 500,000" },
-              { id: "tenancyDuration", label: "Duration of Tenancy", type: "text", placeholder: "e.g. 1 year" },
-              { id: "commencementDate", label: "Commencement Date", type: "date", placeholder: "" },
-              { id: "specialTerms", label: "Special Terms (optional)", type: "textarea", placeholder: "Any additional conditions...", full: true },
-            ]
-          },
-          {
-            id: "loan", label: "Loan Agreement", icon: '<i class="fa-solid fa-file-contract"></i>',
-            desc: "Formal loan contract between two parties",
-            fields: [
-              { id: "lenderName", label: "Lender Full Name / Company", type: "text", placeholder: "e.g. Emeka Trades Ltd" },
-              { id: "borrowerName", label: "Borrower Full Name", type: "text", placeholder: "e.g. Fatima Bello" },
-              { id: "lenderAddress", label: "Lender Address", type: "textarea", placeholder: "Lender's full address...", full: true },
-              { id: "borrowerAddress", label: "Borrower Address", type: "textarea", placeholder: "Borrower's full address...", full: true },
-              { id: "loanAmount", label: "Loan Amount (₦)", type: "text", placeholder: "e.g. 1,000,000" },
-              { id: "interestRate", label: "Interest Rate (%)", type: "text", placeholder: "e.g. 10" },
-              { id: "repaymentPeriod", label: "Repayment Period", type: "text", placeholder: "e.g. 12 months" },
-              { id: "purpose", label: "Purpose of Loan", type: "textarea", placeholder: "State the purpose clearly...", full: true },
-              { id: "loanDate", label: "Agreement Date", type: "date", placeholder: "" },
-            ]
-          },
-          {
-            id: "poa", label: "Power of Attorney", icon: '<i class="fa-solid fa-stamp"></i>',
-            desc: "Authorize someone to act legally on your behalf",
-            fields: [
-              { id: "donorName", label: "Donor Full Name (Person Giving Power)", type: "text", placeholder: "e.g. Chinonso Eze" },
-              { id: "donorAddress", label: "Donor Address", type: "textarea", placeholder: "Donor's full address...", full: true },
-              { id: "donorOccupation", label: "Donor Occupation", type: "text", placeholder: "e.g. Businessman" },
-              { id: "attorneyName", label: "Attorney Full Name (Person Receiving Power)", type: "text", placeholder: "e.g. Amaka Obi" },
-              { id: "attorneyAddress", label: "Attorney Address", type: "textarea", placeholder: "Attorney's full address...", full: true },
-              { id: "attorneyOccupation", label: "Attorney Occupation", type: "text", placeholder: "e.g. Lawyer" },
-              { id: "powers", label: "Powers Granted", type: "textarea", placeholder: "Describe the specific powers being granted...", full: true },
-              { id: "duration", label: "Duration of Authority", type: "text", placeholder: "e.g. 1 year / Until revoked" },
-              { id: "poaDate", label: "Date", type: "date", placeholder: "" },
-            ]
-          },
-          {
-            id: "employment", label: "Employment Contract", icon: '<i class="fa-solid fa-briefcase"></i>',
-            desc: "Formal hiring agreement between employer and employee",
-            fields: [
-              { id: "employerName", label: "Employer / Company Name", type: "text", placeholder: "e.g. Zenith Tech Ltd" },
-              { id: "employerAddress", label: "Employer Address", type: "textarea", placeholder: "Company's registered address...", full: true },
-              { id: "employeeName", label: "Employee Full Name", type: "text", placeholder: "e.g. Tunde Bakare" },
-              { id: "employeeAddress", label: "Employee Address", type: "textarea", placeholder: "Employee's residential address...", full: true },
-              { id: "jobTitle", label: "Job Title / Position", type: "text", placeholder: "e.g. Software Engineer" },
-              { id: "department", label: "Department", type: "text", placeholder: "e.g. Technology" },
-              { id: "salary", label: "Annual Gross Salary (₦)", type: "text", placeholder: "e.g. 3,600,000" },
-              { id: "startDate", label: "Employment Start Date", type: "date", placeholder: "" },
-              { id: "employmentType", label: "Employment Type", type: "text", placeholder: "e.g. Full-time / Part-time / Contract" },
-              { id: "probation", label: "Probation Period", type: "text", placeholder: "e.g. 3 months" },
-              { id: "duties", label: "Key Duties & Responsibilities", type: "textarea", placeholder: "List the main responsibilities...", full: true },
-              { id: "benefits", label: "Benefits & Allowances (optional)", type: "textarea", placeholder: "e.g. Health insurance, transport allowance...", full: true },
-            ]
-          },
-          {
-            id: "nda", label: "Non-Disclosure Agreement", icon: '<i class="fa-solid fa-user-secret"></i>',
-            desc: "Confidentiality agreement between two parties",
-            fields: [
-              { id: "disclosingParty", label: "Disclosing Party Full Name / Company", type: "text", placeholder: "e.g. Innovate Nigeria Ltd" },
-              { id: "disclosingAddress", label: "Disclosing Party Address", type: "textarea", placeholder: "Full address...", full: true },
-              { id: "receivingParty", label: "Receiving Party Full Name / Company", type: "text", placeholder: "e.g. Chidi Okonkwo" },
-              { id: "receivingAddress", label: "Receiving Party Address", type: "textarea", placeholder: "Full address...", full: true },
-              { id: "purposeOfDisclosure", label: "Purpose of Disclosure", type: "textarea", placeholder: "e.g. Evaluating a potential business partnership...", full: true },
-              { id: "confidentialInfo", label: "Nature of Confidential Information", type: "textarea", placeholder: "e.g. Business plans, financial data, trade secrets...", full: true },
-              { id: "ndaDuration", label: "Duration of Confidentiality", type: "text", placeholder: "e.g. 2 years" },
-              { id: "ndaDate", label: "Agreement Date", type: "date", placeholder: "" },
-            ]
-          },
-          {
-            id: "mou", label: "Memorandum of Understanding", icon: '<i class="fa-solid fa-handshake"></i>',
-            desc: "Formal agreement of intent between organizations",
-            fields: [
-              { id: "party1Name", label: "First Party Full Name / Organization", type: "text", placeholder: "e.g. Lagos State University" },
-              { id: "party1Address", label: "First Party Address", type: "textarea", placeholder: "First party's address...", full: true },
-              { id: "party2Name", label: "Second Party Full Name / Organization", type: "text", placeholder: "e.g. TechBridge Nigeria Ltd" },
-              { id: "party2Address", label: "Second Party Address", type: "textarea", placeholder: "Second party's address...", full: true },
-              { id: "mouPurpose", label: "Purpose of the MOU", type: "textarea", placeholder: "Describe the purpose and background of this agreement...", full: true },
-              { id: "mouScope", label: "Scope of Cooperation", type: "textarea", placeholder: "What both parties agree to do...", full: true },
-              { id: "mouDuration", label: "Duration", type: "text", placeholder: "e.g. 2 years from date of signing" },
-              { id: "mouDate", label: "Date", type: "date", placeholder: "" },
-            ]
-          },
-          {
-            id: "deed", label: "Deed of Assignment", icon: '<i class="fa-solid fa-house-circle-check"></i>',
-            desc: "Transfer of property ownership from one party to another",
-            fields: [
-              { id: "assignorName", label: "Assignor Full Name (Seller/Transferor)", type: "text", placeholder: "e.g. Biodun Adeyemi" },
-              { id: "assignorAddress", label: "Assignor Address", type: "textarea", placeholder: "Assignor's full address...", full: true },
-              { id: "assigneeName", label: "Assignee Full Name (Buyer/Recipient)", type: "text", placeholder: "e.g. Ngozi Okafor" },
-              { id: "assigneeAddress", label: "Assignee Address", type: "textarea", placeholder: "Assignee's full address...", full: true },
-              { id: "propertyDescription", label: "Property Description", type: "textarea", placeholder: "Full description of the property including plot number, location, size...", full: true },
-              { id: "titleDetails", label: "Title / Certificate of Occupancy Details", type: "textarea", placeholder: "e.g. C of O No. 12345, issued by Lagos State Government...", full: true },
-              { id: "consideration", label: "Consideration / Purchase Price (₦)", type: "text", placeholder: "e.g. 15,000,000" },
-              { id: "deedDate", label: "Date of Assignment", type: "date", placeholder: "" },
-            ]
+      // ── DOCUMENTS DATA ──
+      const DOCUMENTS = [
+        {
+          id: "affidavit",
+          label: "Affidavit",
+          icon: '<i class="fa-solid fa-scale-balanced"></i>',
+          desc: "Sworn written statement for legal proceedings",
+          fields: [
+            {
+              id: "deponentName",
+              label: "Full Name of Deponent",
+              type: "text",
+              placeholder: "e.g. Chukwuemeka Obi",
+            },
+            {
+              id: "deponentAge",
+              label: "Age",
+              type: "text",
+              placeholder: "e.g. 35",
+            },
+            {
+              id: "deponentOccupation",
+              label: "Occupation",
+              type: "text",
+              placeholder: "e.g. Civil Servant",
+            },
+            {
+              id: "deponentAddress",
+              label: "Residential Address",
+              type: "textarea",
+              placeholder: "Full residential address...",
+              full: true,
+            },
+            {
+              id: "state",
+              label: "State",
+              type: "text",
+              placeholder: "e.g. Lagos State",
+            },
+            {
+              id: "courtName",
+              label: "Court / Authority",
+              type: "text",
+              placeholder: "e.g. High Court of Lagos State",
+            },
+            {
+              id: "deponentStatement",
+              label: "Statement of Facts",
+              type: "textarea",
+              placeholder: "Clearly state the facts being sworn to...",
+              full: true,
+            },
+            {
+              id: "date",
+              label: "Date of Swearing",
+              type: "date",
+              placeholder: "",
+            },
+            {
+              id: "religion",
+              label: "Oath Preference",
+              type: "select",
+              placeholder: "",
+              full: false,
+              options: [
+                "Christian — I swear by Almighty God",
+                "Muslim — I swear by Allah",
+                "Neutral — I solemnly and sincerely affirm",
+              ],
+            },
+          ],
+        },
+        {
+          id: "tenancy",
+          label: "Tenancy Agreement",
+          icon: '<i class="fa-solid fa-building-columns"></i>',
+          desc: "Residential or commercial tenancy contract",
+          fields: [
+            {
+              id: "landlordName",
+              label: "Landlord Full Name",
+              type: "text",
+              placeholder: "e.g. Adewale Johnson",
+            },
+            {
+              id: "tenantName",
+              label: "Tenant Full Name",
+              type: "text",
+              placeholder: "e.g. Ngozi Okafor",
+            },
+            {
+              id: "landlordAddress",
+              label: "Landlord Address",
+              type: "textarea",
+              placeholder: "Landlord's full address...",
+              full: true,
+            },
+            {
+              id: "tenantAddress",
+              label: "Tenant Address",
+              type: "textarea",
+              placeholder: "Tenant's current address...",
+              full: true,
+            },
+            {
+              id: "propertyAddress",
+              label: "Property Address",
+              type: "textarea",
+              placeholder: "Address of the property being leased...",
+              full: true,
+            },
+            {
+              id: "rentAmount",
+              label: "Annual Rent (₦)",
+              type: "text",
+              placeholder: "e.g. 500,000",
+            },
+            {
+              id: "tenancyDuration",
+              label: "Duration of Tenancy",
+              type: "text",
+              placeholder: "e.g. 1 year",
+            },
+            {
+              id: "commencementDate",
+              label: "Commencement Date",
+              type: "date",
+              placeholder: "",
+            },
+            {
+              id: "specialTerms",
+              label: "Special Terms (optional)",
+              type: "textarea",
+              placeholder: "Any additional conditions...",
+              full: true,
+            },
+          ],
+        },
+        {
+          id: "loan",
+          label: "Loan Agreement",
+          icon: '<i class="fa-solid fa-file-contract"></i>',
+          desc: "Formal loan contract between two parties",
+          fields: [
+            {
+              id: "lenderName",
+              label: "Lender Full Name / Company",
+              type: "text",
+              placeholder: "e.g. Emeka Trades Ltd",
+            },
+            {
+              id: "borrowerName",
+              label: "Borrower Full Name",
+              type: "text",
+              placeholder: "e.g. Fatima Bello",
+            },
+            {
+              id: "lenderAddress",
+              label: "Lender Address",
+              type: "textarea",
+              placeholder: "Lender's full address...",
+              full: true,
+            },
+            {
+              id: "borrowerAddress",
+              label: "Borrower Address",
+              type: "textarea",
+              placeholder: "Borrower's full address...",
+              full: true,
+            },
+            {
+              id: "loanAmount",
+              label: "Loan Amount (₦)",
+              type: "text",
+              placeholder: "e.g. 1,000,000",
+            },
+            {
+              id: "interestRate",
+              label: "Interest Rate (%)",
+              type: "text",
+              placeholder: "e.g. 10",
+            },
+            {
+              id: "repaymentPeriod",
+              label: "Repayment Period",
+              type: "text",
+              placeholder: "e.g. 12 months",
+            },
+            {
+              id: "purpose",
+              label: "Purpose of Loan",
+              type: "textarea",
+              placeholder: "State the purpose clearly...",
+              full: true,
+            },
+            {
+              id: "loanDate",
+              label: "Agreement Date",
+              type: "date",
+              placeholder: "",
+            },
+          ],
+        },
+        {
+          id: "poa",
+          label: "Power of Attorney",
+          icon: '<i class="fa-solid fa-stamp"></i>',
+          desc: "Authorize someone to act legally on your behalf",
+          fields: [
+            {
+              id: "donorName",
+              label: "Donor Full Name (Person Giving Power)",
+              type: "text",
+              placeholder: "e.g. Chinonso Eze",
+            },
+            {
+              id: "donorAddress",
+              label: "Donor Address",
+              type: "textarea",
+              placeholder: "Donor's full address...",
+              full: true,
+            },
+            {
+              id: "donorOccupation",
+              label: "Donor Occupation",
+              type: "text",
+              placeholder: "e.g. Businessman",
+            },
+            {
+              id: "attorneyName",
+              label: "Attorney Full Name (Person Receiving Power)",
+              type: "text",
+              placeholder: "e.g. Amaka Obi",
+            },
+            {
+              id: "attorneyAddress",
+              label: "Attorney Address",
+              type: "textarea",
+              placeholder: "Attorney's full address...",
+              full: true,
+            },
+            {
+              id: "attorneyOccupation",
+              label: "Attorney Occupation",
+              type: "text",
+              placeholder: "e.g. Lawyer",
+            },
+            {
+              id: "powers",
+              label: "Powers Granted",
+              type: "textarea",
+              placeholder: "Describe the specific powers being granted...",
+              full: true,
+            },
+            {
+              id: "duration",
+              label: "Duration of Authority",
+              type: "text",
+              placeholder: "e.g. 1 year / Until revoked",
+            },
+            { id: "poaDate", label: "Date", type: "date", placeholder: "" },
+          ],
+        },
+        {
+          id: "employment",
+          label: "Employment Contract",
+          icon: '<i class="fa-solid fa-briefcase"></i>',
+          desc: "Formal hiring agreement between employer and employee",
+          fields: [
+            {
+              id: "employerName",
+              label: "Employer / Company Name",
+              type: "text",
+              placeholder: "e.g. Zenith Tech Ltd",
+            },
+            {
+              id: "employerAddress",
+              label: "Employer Address",
+              type: "textarea",
+              placeholder: "Company's registered address...",
+              full: true,
+            },
+            {
+              id: "employeeName",
+              label: "Employee Full Name",
+              type: "text",
+              placeholder: "e.g. Tunde Bakare",
+            },
+            {
+              id: "employeeAddress",
+              label: "Employee Address",
+              type: "textarea",
+              placeholder: "Employee's residential address...",
+              full: true,
+            },
+            {
+              id: "jobTitle",
+              label: "Job Title / Position",
+              type: "text",
+              placeholder: "e.g. Software Engineer",
+            },
+            {
+              id: "department",
+              label: "Department",
+              type: "text",
+              placeholder: "e.g. Technology",
+            },
+            {
+              id: "salary",
+              label: "Annual Gross Salary (₦)",
+              type: "text",
+              placeholder: "e.g. 3,600,000",
+            },
+            {
+              id: "startDate",
+              label: "Employment Start Date",
+              type: "date",
+              placeholder: "",
+            },
+            {
+              id: "employmentType",
+              label: "Employment Type",
+              type: "text",
+              placeholder: "e.g. Full-time / Part-time / Contract",
+            },
+            {
+              id: "probation",
+              label: "Probation Period",
+              type: "text",
+              placeholder: "e.g. 3 months",
+            },
+            {
+              id: "duties",
+              label: "Key Duties & Responsibilities",
+              type: "textarea",
+              placeholder: "List the main responsibilities...",
+              full: true,
+            },
+            {
+              id: "benefits",
+              label: "Benefits & Allowances (optional)",
+              type: "textarea",
+              placeholder: "e.g. Health insurance, transport allowance...",
+              full: true,
+            },
+          ],
+        },
+        {
+          id: "nda",
+          label: "Non-Disclosure Agreement",
+          icon: '<i class="fa-solid fa-user-secret"></i>',
+          desc: "Confidentiality agreement between two parties",
+          fields: [
+            {
+              id: "disclosingParty",
+              label: "Disclosing Party Full Name / Company",
+              type: "text",
+              placeholder: "e.g. Innovate Nigeria Ltd",
+            },
+            {
+              id: "disclosingAddress",
+              label: "Disclosing Party Address",
+              type: "textarea",
+              placeholder: "Full address...",
+              full: true,
+            },
+            {
+              id: "receivingParty",
+              label: "Receiving Party Full Name / Company",
+              type: "text",
+              placeholder: "e.g. Chidi Okonkwo",
+            },
+            {
+              id: "receivingAddress",
+              label: "Receiving Party Address",
+              type: "textarea",
+              placeholder: "Full address...",
+              full: true,
+            },
+            {
+              id: "purposeOfDisclosure",
+              label: "Purpose of Disclosure",
+              type: "textarea",
+              placeholder:
+                "e.g. Evaluating a potential business partnership...",
+              full: true,
+            },
+            {
+              id: "confidentialInfo",
+              label: "Nature of Confidential Information",
+              type: "textarea",
+              placeholder:
+                "e.g. Business plans, financial data, trade secrets...",
+              full: true,
+            },
+            {
+              id: "ndaDuration",
+              label: "Duration of Confidentiality",
+              type: "text",
+              placeholder: "e.g. 2 years",
+            },
+            {
+              id: "ndaDate",
+              label: "Agreement Date",
+              type: "date",
+              placeholder: "",
+            },
+          ],
+        },
+        {
+          id: "mou",
+          label: "Memorandum of Understanding",
+          icon: '<i class="fa-solid fa-handshake"></i>',
+          desc: "Formal agreement of intent between organizations",
+          fields: [
+            {
+              id: "party1Name",
+              label: "First Party Full Name / Organization",
+              type: "text",
+              placeholder: "e.g. Lagos State University",
+            },
+            {
+              id: "party1Address",
+              label: "First Party Address",
+              type: "textarea",
+              placeholder: "First party's address...",
+              full: true,
+            },
+            {
+              id: "party2Name",
+              label: "Second Party Full Name / Organization",
+              type: "text",
+              placeholder: "e.g. TechBridge Nigeria Ltd",
+            },
+            {
+              id: "party2Address",
+              label: "Second Party Address",
+              type: "textarea",
+              placeholder: "Second party's address...",
+              full: true,
+            },
+            {
+              id: "mouPurpose",
+              label: "Purpose of the MOU",
+              type: "textarea",
+              placeholder:
+                "Describe the purpose and background of this agreement...",
+              full: true,
+            },
+            {
+              id: "mouScope",
+              label: "Scope of Cooperation",
+              type: "textarea",
+              placeholder: "What both parties agree to do...",
+              full: true,
+            },
+            {
+              id: "mouDuration",
+              label: "Duration",
+              type: "text",
+              placeholder: "e.g. 2 years from date of signing",
+            },
+            { id: "mouDate", label: "Date", type: "date", placeholder: "" },
+          ],
+        },
+        {
+          id: "deed",
+          label: "Deed of Assignment",
+          icon: '<i class="fa-solid fa-house-circle-check"></i>',
+          desc: "Transfer of property ownership from one party to another",
+          fields: [
+            {
+              id: "assignorName",
+              label: "Assignor Full Name (Seller/Transferor)",
+              type: "text",
+              placeholder: "e.g. Biodun Adeyemi",
+            },
+            {
+              id: "assignorAddress",
+              label: "Assignor Address",
+              type: "textarea",
+              placeholder: "Assignor's full address...",
+              full: true,
+            },
+            {
+              id: "assigneeName",
+              label: "Assignee Full Name (Buyer/Recipient)",
+              type: "text",
+              placeholder: "e.g. Ngozi Okafor",
+            },
+            {
+              id: "assigneeAddress",
+              label: "Assignee Address",
+              type: "textarea",
+              placeholder: "Assignee's full address...",
+              full: true,
+            },
+            {
+              id: "propertyDescription",
+              label: "Property Description",
+              type: "textarea",
+              placeholder:
+                "Full description of the property including plot number, location, size...",
+              full: true,
+            },
+            {
+              id: "titleDetails",
+              label: "Title / Certificate of Occupancy Details",
+              type: "textarea",
+              placeholder:
+                "e.g. C of O No. 12345, issued by Lagos State Government...",
+              full: true,
+            },
+            {
+              id: "consideration",
+              label: "Consideration / Purchase Price (₦)",
+              type: "text",
+              placeholder: "e.g. 15,000,000",
+            },
+            {
+              id: "deedDate",
+              label: "Date of Assignment",
+              type: "date",
+              placeholder: "",
+            },
+          ],
+        },
+      ];
+
+      let selectedDoc = null;
+      let generatedText = "";
+
+      // Render landing page doc preview cards
+      const previewGrid = document.getElementById("docsPreviewGrid");
+      DOCUMENTS.forEach((doc) => {
+        const card = document.createElement("div");
+        card.className = "doc-preview-card";
+        card.innerHTML = `
+      <span class="doc-preview-icon">${doc.icon}</span>
+      <div class="doc-preview-name">${doc.label}</div>
+      <div class="doc-preview-desc">${doc.desc}</div>`;
+        card.onclick = () => {
+          showApp();
+          selectDoc(doc);
+        };
+        previewGrid.appendChild(card);
+      });
+
+      // Render app doc cards
+      const grid = document.getElementById("docGrid");
+      DOCUMENTS.forEach((doc) => {
+        const card = document.createElement("div");
+        card.className = "doc-card";
+        card.id = "card-" + doc.id;
+        card.innerHTML = `
+      <span class="doc-icon">${doc.icon}</span>
+      <div class="doc-name">${doc.label}</div>
+      <div class="doc-desc">${doc.desc}</div>
+      <div class="doc-selected-badge"><i class="fa-solid fa-check"></i> Selected</div>`;
+        card.onclick = () => selectDoc(doc);
+        grid.appendChild(card);
+      });
+
+      function selectDoc(doc) {
+        selectedDoc = doc;
+        document
+          .querySelectorAll(".doc-card")
+          .forEach((c) => c.classList.remove("active"));
+        document.getElementById("card-" + doc.id).classList.add("active");
+        document.getElementById("formTitle").textContent = doc.label;
+
+        const fieldsGrid = document.getElementById("fieldsGrid");
+        fieldsGrid.innerHTML = "";
+        doc.fields.forEach((field) => {
+          const group = document.createElement("div");
+          group.className = "field-group" + (field.full ? " field-full" : "");
+          let el;
+          if (field.type === "textarea") {
+            el = `<textarea id="${field.id}" placeholder="${field.placeholder}"></textarea>`;
+          } else if (field.type === "select") {
+            const opts = field.options
+              .map((o) => `<option value="${o}">${o}</option>`)
+              .join("");
+            el = `<select id="${field.id}" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);padding:13px 16px;font-size:16px;font-family:'Cormorant Garamond',Georgia,serif;font-weight:500;outline:none;width:100%;cursor:pointer;transition:border-color 0.2s;">${opts}</select>`;
+          } else {
+            el = `<input type="${field.type}" id="${field.id}" placeholder="${field.placeholder}" />`;
           }
-        ];
-
-        let selectedDoc = null;
-        let generatedText = "";
-
-        // Render landing page doc preview cards
-        const previewGrid = document.getElementById("docsPreviewGrid");
-        DOCUMENTS.forEach(doc => {
-          const card = document.createElement("div");
-          card.className = "doc-preview-card";
-          card.innerHTML = `
-            <span class="doc-preview-icon">${doc.icon}</span>
-            <div class="doc-preview-name">${doc.label}</div>
-            <div class="doc-preview-desc">${doc.desc}</div>`;
-          card.onclick = () => { showApp(); selectDoc(doc); };
-          previewGrid.appendChild(card);
+          group.innerHTML = `<label for="${field.id}">${field.label}</label>${el}`;
+          fieldsGrid.appendChild(group);
         });
 
-        // Render app doc cards
-        const grid = document.getElementById("docGrid");
-        DOCUMENTS.forEach(doc => {
-          const card = document.createElement("div");
-          card.className = "doc-card";
-          card.id = "card-" + doc.id;
-          card.innerHTML = `
-            <span class="doc-icon">${doc.icon}</span>
-            <div class="doc-name">${doc.label}</div>
-            <div class="doc-desc">${doc.desc}</div>
-            <div class="doc-selected-badge"><i class="fa-solid fa-check"></i> Selected</div>`;
-          card.onclick = () => selectDoc(doc);
-          grid.appendChild(card);
-        });
+        document.getElementById("formPanel").classList.add("visible");
+        document.getElementById("outputPanel").classList.remove("visible");
+        document.getElementById("errorBox").classList.remove("visible");
+        generatedText = "";
 
-        function selectDoc(doc) {
-          selectedDoc = doc;
-          document.querySelectorAll(".doc-card").forEach(c => c.classList.remove("active"));
-          document.getElementById("card-" + doc.id).classList.add("active");
-          document.getElementById("formTitle").textContent = doc.label;
+        const btn = document.getElementById("generateBtn");
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Generate ${doc.label}`;
 
-          const fieldsGrid = document.getElementById("fieldsGrid");
-          fieldsGrid.innerHTML = "";
-          doc.fields.forEach(field => {
-            const group = document.createElement("div");
-            group.className = "field-group" + (field.full ? " field-full" : "");
-            let el;
-            if (field.type === "textarea") {
-              el = `<textarea id="${field.id}" placeholder="${field.placeholder}"></textarea>`;
-            } else if (field.type === "select") {
-              const opts = field.options.map(o => `<option value="${o}">${o}</option>`).join("");
-              el = `<select id="${field.id}" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);padding:13px 16px;font-size:16px;font-family:'Cormorant Garamond',Georgia,serif;font-weight:500;outline:none;width:100%;cursor:pointer;transition:border-color 0.2s;">${opts}</select>`;
-            } else {
-              el = `<input type="${field.type}" id="${field.id}" placeholder="${field.placeholder}" />`;
-            }
-            group.innerHTML = `<label for="${field.id}">${field.label}</label>${el}`;
-            fieldsGrid.appendChild(group);
-          });
+        setTimeout(
+          () =>
+            document
+              .getElementById("formPanel")
+              .scrollIntoView({ behavior: "smooth", block: "start" }),
+          80,
+        );
+      }
 
-          document.getElementById("formPanel").classList.add("visible");
-          document.getElementById("outputPanel").classList.remove("visible");
-          document.getElementById("errorBox").classList.remove("visible");
-          generatedText = "";
-
-          const btn = document.getElementById("generateBtn");
-          btn.disabled = false;
-          btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Generate ${doc.label}`;
-
-          setTimeout(() => document.getElementById("formPanel").scrollIntoView({ behavior: "smooth", block: "start" }), 80);
-        }
-
-        function buildPrompt() {
-          const fieldValues = selectedDoc.fields.map(f => {
+      function buildPrompt() {
+        const fieldValues = selectedDoc.fields
+          .map((f) => {
             const el = document.getElementById(f.id);
             return `${f.label}: ${el?.value?.trim() || "Not provided"}`;
-          }).join("\n");
+          })
+          .join("\n");
 
-          const oathEl = document.getElementById("religion");
-          const oathPref = oathEl ? oathEl.value : null;
-          const oathInstruction = oathPref
-            ? `- Oath/Affirmation: Use exactly this form: "${oathPref}". Do NOT use any other religious language.`
-            : "";
+        const oathEl = document.getElementById("religion");
+        const oathPref = oathEl ? oathEl.value : null;
+        const oathInstruction = oathPref
+          ? `- Oath/Affirmation: Use exactly this form: "${oathPref}". Do NOT use any other religious language.`
+          : "";
 
-          return `You are an expert Nigerian legal document drafter. Generate a complete, formal, court-ready ${selectedDoc.label} based on the details below.
+        return `You are an expert Nigerian legal document drafter. Generate a complete, formal, court-ready ${selectedDoc.label} based on the details below.
 
-      Details:
-      ${fieldValues}
+Details:
+${fieldValues}
 
-      Requirements:
-      - Use proper Nigerian legal language and formatting
-      - Include all standard clauses required under Nigerian law for this document type
-      - Include numbered clauses, proper headings, signature blocks, and witness sections
-      - Add governing law clause referencing Nigerian jurisdiction
-      ${oathInstruction}
-      - Output ONLY the finished legal document — no commentary, no explanations
-      - Do NOT use markdown formatting, asterisks (**), hashes (#), or any special symbols for formatting
-      - Use PLAIN TEXT only with proper legal document spacing and capitalization for headings
-      - Keep the document compact and concise — avoid excessive blank lines between sections
-      - Use single line breaks between clauses, not double or triple spacing
-      - The entire document should ideally fit within 1-2 pages when printed
-      - STRICTLY FORBIDDEN: Do NOT use square bracket placeholders like [Name], [Date], [Signature], [Commissioner], [Witness 1], [Witness 2] or anything in square brackets insted use just "______________"
-      - STRICTLY FORBIDDEN: Do NOT use underscores like __________ for any lines
-      - STRICTLY FORBIDDEN: Do NOT use dashes like ----------- as separators between sections
-      - For signature and name lines use ONLY this exact format with underscores:
-        Signature: _______________________
-        Name: _______________________
-        Date: _______________________
-        Address: _______________________
-      - For Commissioner for Oaths, do NOT include their name since it is unknown — just write "Commissioner for Oaths" as the title
-      - For Witnesses, do NOT include placeholder names — just label them "Witness 1" and "Witness 2" with "_______________________" lines for their details
-      - Separate sections with a single blank line only
-      - NEVER put dashes, asterisks, or any line characters under section headings
-      - Section headings should just be written in CAPITALS followed immediately by the content on the next line
-      - Keep the document concise and compact — avoid excessive blank lines between sections
-      - Use single line spacing between clauses, double spacing only between major sections
+Requirements:
+- Use proper Nigerian legal language and formatting
+- Include all standard clauses required under Nigerian law for this document type
+- Include numbered clauses, proper headings, signature blocks, and witness sections
+- Add governing law clause referencing Nigerian jurisdiction
+${oathInstruction}
+- Output ONLY the finished legal document — no commentary, no explanations
+- Do NOT use markdown formatting, asterisks (**), hashes (#), or any special symbols for formatting
+- Use PLAIN TEXT only with proper legal document spacing and capitalization for headings
+- Keep the document compact and concise — avoid excessive blank lines between sections
+- Use single line breaks between clauses, not double or triple spacing
+- The entire document should ideally fit within 1-2 pages when printed
+- STRICTLY FORBIDDEN: Do NOT use square bracket placeholders like [Name], [Date], [Signature], [Commissioner], [Witness 1], [Witness 2] or anything in square brackets
+- STRICTLY FORBIDDEN: Do NOT use underscores like __________ for any lines
+- STRICTLY FORBIDDEN: Do NOT use dashes like ----------- as separators between sections
+- For signature and name lines use ONLY this exact format with underscores:
+  Signature: _______________________
+  Name: _______________________
+  Date: _______________________
+  Address: _______________________
+- For Commissioner for Oaths, do NOT include their name since it is unknown — just write "Commissioner for Oaths" as the title
+- For Witnesses, do NOT include placeholder names — just label them "Witness 1" and "Witness 2" with dotted lines for their details
+- Separate sections with a single blank line only
+- NEVER put dashes, asterisks, or any line characters under section headings
+- Section headings should just be written in CAPITALS followed immediately by the content on the next line
+- Keep the document concise and compact — avoid excessive blank lines between sections
+- Use single line spacing between clauses, double spacing only between major sections
 
-      Generate the ${selectedDoc.label} now:`;
-        }
+Generate the ${selectedDoc.label} now:`;
+      }
 
-        function cleanDocument(text) {
-          return text
-            // Remove ALL bracketed placeholders - catch every variation
-            .replace(/\[Signature[^\]]*\]/gi, "_______________________")
-            .replace(/\[Name[^\]]*\]/gi, "_______________________")
-            .replace(/\[Seal[^\]]*\]/gi, "_______________________")
-            .replace(/\[Date[^\]]*\]/gi, "_______________________")
-            .replace(/\[Address[^\]]*\]/gi, "_______________________")
-            .replace(/\[Witness[^\]]*\]/gi, "_______________________")
-            .replace(/\[Commissioner[^\]]*\]/gi, "_______________________")
-            .replace(/\[[^\]]{1,120}\]/g, "_______________________")
-            // Remove ALL dash-only lines (1 or more dashes, nothing else on the line)
-            .replace(/^-+\s*$/gm, "")
-            // Remove === lines
-            .replace(/^=+\s*$/gm, "")
-            // Remove *** lines
-            .replace(/^\*+\s*$/gm, "")
-            // Remove ___ only lines (underscores as separators, not signature lines)
-            .replace(/^_{20,}\s*$/gm, "")
-            // Remove dot-only separator lines
-            .replace(/^\.{5,}\s*$/gm, "")
-            // Replace inline dots used as fill-in lines with underscores
-            .replace(/\.{6,}/g, "_______________________")
-            // Remove NOTE: disclaimer lines
-            .replace(/^NOTE:.*$/gm, "")
-            // Remove multiple blank lines — max 1 blank line between sections
-            .replace(/
-      {3,}/g, "
+      function cleanDocument(text) {
+        return text
+          .replace(/\[Signature[^\]]*\]/gi, "_______________________")
+          .replace(/\[Name[^\]]*\]/gi, "_______________________")
+          .replace(/\[Seal[^\]]*\]/gi, "_______________________")
+          .replace(/\[Date[^\]]*\]/gi, "_______________________")
+          .replace(/\[Address[^\]]*\]/gi, "_______________________")
+          .replace(/\[Witness[^\]]*\]/gi, "_______________________")
+          .replace(/\[Commissioner[^\]]*\]/gi, "_______________________")
+          .replace(/\[[^\]]{1,120}\]/g, "_______________________")
+          .replace(/^-+\s*$/gm, "")
+          .replace(/^=+\s*$/gm, "")
+          .replace(/^\*+\s*$/gm, "")
+          .replace(/^_{20,}\s*$/gm, "")
+          .replace(/^\.{5,}\s*$/gm, "")
+          .replace(/\.{6,}/g, "_______________________")
+          .replace(/^NOTE:.*$/gm, "")
+          .replace(/(\r?\n){3,}/g, "\n\n")
+          .trim();
+      }
 
-      ")
+      async function generateDocument() {
+        if (!selectedDoc) return;
+        const btn = document.getElementById("generateBtn");
+        const errorBox = document.getElementById("errorBox");
+        const outputPanel = document.getElementById("outputPanel");
+        const outputContent = document.getElementById("outputContent");
+
+        errorBox.classList.remove("visible");
+        btn.disabled = true;
+        btn.innerHTML = `<div class="spinner"></div> Drafting your document...`;
+
+        outputPanel.classList.add("visible");
+        outputContent.innerHTML = `<div class="loading-state"><div class="loading-spinner-lg"></div><div class="loading-text">Drafting your document...</div></div>`;
+        document.getElementById("outputTitle").textContent =
+          selectedDoc.label + " — Draft";
+        setTimeout(
+          () =>
+            outputPanel.scrollIntoView({ behavior: "smooth", block: "start" }),
+          100,
+        );
+
+        try {
+          const response = await fetch("/api/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              messages: [{ role: "user", content: buildPrompt() }],
+            }),
+          });
+
+          const data = await response.json();
+          if (data.error) throw new Error(data.error.message);
+
+          generatedText = (data.content || [])
+            .map((c) => c.text || "")
+            .join("")
             .trim();
+          if (!generatedText)
+            throw new Error("Empty response received. Please try again.");
+          generatedText = cleanDocument(generatedText);
+          outputContent.innerHTML = `<div class="doc-preview">${escapeHtml(generatedText)}</div>`;
+        } catch (err) {
+          outputPanel.classList.remove("visible");
+          errorBox.innerHTML = `<strong><i class="fa-solid fa-triangle-exclamation"></i> Error:</strong> ${err.message || "Failed to generate. Make sure the server is running and your API key is set."}`;
+          errorBox.classList.add("visible");
+          generatedText = "";
         }
 
-        async function generateDocument() {
-          if (!selectedDoc) return;
-          const btn = document.getElementById("generateBtn");
-          const errorBox = document.getElementById("errorBox");
-          const outputPanel = document.getElementById("outputPanel");
-          const outputContent = document.getElementById("outputContent");
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-rotate-right"></i> Regenerate ${selectedDoc.label}`;
+      }
 
-          errorBox.classList.remove("visible");
-          btn.disabled = true;
-          btn.innerHTML = `<div class="spinner"></div> Drafting your document...`;
+      function escapeHtml(str) {
+        return str
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
 
-          outputPanel.classList.add("visible");
-          outputContent.innerHTML = `<div class="loading-state"><div class="loading-spinner-lg"></div><div class="loading-text">Drafting your document...</div></div>`;
-          document.getElementById("outputTitle").textContent = selectedDoc.label + " — Draft";
-          setTimeout(() => outputPanel.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+      function copyDocument(btn) {
+        if (!generatedText) return;
+        navigator.clipboard.writeText(generatedText).then(() => {
+          const orig = btn.innerHTML;
+          btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+          setTimeout(() => (btn.innerHTML = orig), 2000);
+        });
+      }
 
-          try {
-            const response = await fetch("/api/generate", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ messages: [{ role: "user", content: buildPrompt() }] })
-            });
+      function downloadDocument() {
+        if (!generatedText) return;
+        const blob = new Blob([generatedText], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download =
+          (selectedDoc?.label || "Document").replace(/\s+/g, "_") +
+          "_LexDraft.txt";
+        a.click();
+        URL.revokeObjectURL(url);
+      }
 
-            const data = await response.json();
-            if (data.error) throw new Error(data.error.message);
+      function downloadWord() {
+        if (!generatedText) return;
 
-            generatedText = (data.content || []).map(c => c.text || "").join("").trim();
-            if (!generatedText) throw new Error("Empty response received. Please try again.");
-            generatedText = cleanDocument(generatedText);
-            outputContent.innerHTML = `<div class="doc-preview">${escapeHtml(generatedText)}</div>`;
+        const lines = generatedText.split("\n");
 
-          } catch (err) {
-            outputPanel.classList.remove("visible");
-            errorBox.innerHTML = `<strong><i class="fa-solid fa-triangle-exclamation"></i> Error:</strong> ${err.message || "Failed to generate. Make sure the server is running and your API key is set."}`;
-            errorBox.classList.add("visible");
-            generatedText = "";
+        // Build paragraphs XML
+        let paragraphsXml = "";
+        lines.forEach((line) => {
+          const trimmed = line.trim();
+          const escaped = trimmed
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+
+          const isTitle =
+            trimmed === trimmed.toUpperCase() &&
+            trimmed.length > 0 &&
+            trimmed.length < 60 &&
+            !/\d+\./.test(trimmed);
+          const isSubheading = trimmed.endsWith(":") && trimmed.length < 60;
+          const isEmpty = trimmed === "";
+
+          if (isEmpty) {
+            paragraphsXml += `<w:p><w:pPr><w:spacing w:after="80"/></w:pPr></w:p>`;
+          } else if (isTitle) {
+            paragraphsXml += `
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="200" w:after="100"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+              </w:rPr>
+              <w:t>${escaped}</w:t>
+            </w:r>
+          </w:p>`;
+          } else if (isSubheading) {
+            paragraphsXml += `
+          <w:p>
+            <w:pPr><w:spacing w:before="160" w:after="60"/></w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+              </w:rPr>
+              <w:t>${escaped}</w:t>
+            </w:r>
+          </w:p>`;
+          } else {
+            paragraphsXml += `
+          <w:p>
+            <w:pPr><w:spacing w:after="60"/></w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="22"/>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+              </w:rPr>
+              <w:t xml:space="preserve">${escaped}</w:t>
+            </w:r>
+          </w:p>`;
           }
+        });
 
-          btn.disabled = false;
-          btn.innerHTML = `<i class="fa-solid fa-rotate-right"></i> Regenerate ${selectedDoc.label}`;
+        const docXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
+  xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <w:body>
+    ${paragraphsXml}
+    <w:sectPr>
+      <w:pgSz w:w="12240" w:h="15840"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/>
+    </w:sectPr>
+  </w:body>
+</w:document>`;
+
+        const relsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+
+        const wordRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+</Relationships>`;
+
+        const contentTypesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`;
+
+        // Build ZIP manually using base64
+        function strToU8(str) {
+          return new TextEncoder().encode(str);
         }
 
-        function escapeHtml(str) {
-          return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+        function crc32(data) {
+          const table = new Uint32Array(256);
+          for (let i = 0; i < 256; i++) {
+            let c = i;
+            for (let j = 0; j < 8; j++)
+              c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+            table[i] = c;
+          }
+          let crc = 0xffffffff;
+          for (let i = 0; i < data.length; i++)
+            crc = table[(crc ^ data[i]) & 0xff] ^ (crc >>> 8);
+          return (crc ^ 0xffffffff) >>> 0;
         }
 
-        function copyDocument(btn) {
-          if (!generatedText) return;
-          navigator.clipboard.writeText(generatedText).then(() => {
-            const orig = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
-            setTimeout(() => btn.innerHTML = orig, 2000);
+        function makeZipEntry(filename, data) {
+          const nameBytes = strToU8(filename);
+          const crc = crc32(data);
+          const size = data.length;
+          const header = new Uint8Array(30 + nameBytes.length);
+          const view = new DataView(header.buffer);
+          view.setUint32(0, 0x04034b50, true);
+          view.setUint16(4, 20, true);
+          view.setUint16(6, 0, true);
+          view.setUint16(8, 0, true);
+          view.setUint16(10, 0, true);
+          view.setUint16(12, 0, true);
+          view.setUint32(14, crc, true);
+          view.setUint32(18, size, true);
+          view.setUint32(22, size, true);
+          view.setUint16(26, nameBytes.length, true);
+          view.setUint16(28, 0, true);
+          header.set(nameBytes, 30);
+          return { header, data, nameBytes, crc, size };
+        }
+
+        function buildZip(files) {
+          const entries = files.map((f) =>
+            makeZipEntry(f.name, strToU8(f.content)),
+          );
+          const parts = [];
+          const centralDir = [];
+          let offset = 0;
+
+          entries.forEach((e) => {
+            const localHeader = e.header;
+            parts.push(localHeader);
+            parts.push(e.data);
+
+            const cdEntry = new Uint8Array(46 + e.nameBytes.length);
+            const v = new DataView(cdEntry.buffer);
+            v.setUint32(0, 0x02014b50, true);
+            v.setUint16(4, 20, true);
+            v.setUint16(6, 20, true);
+            v.setUint16(8, 0, true);
+            v.setUint16(10, 0, true);
+            v.setUint16(12, 0, true);
+            v.setUint16(14, 0, true);
+            v.setUint32(16, e.crc, true);
+            v.setUint32(20, e.size, true);
+            v.setUint32(24, e.size, true);
+            v.setUint16(28, e.nameBytes.length, true);
+            v.setUint16(30, 0, true);
+            v.setUint16(32, 0, true);
+            v.setUint16(34, 0, true);
+            v.setUint16(36, 0, true);
+            v.setUint32(38, 0, true);
+            v.setUint32(42, offset, true);
+            cdEntry.set(e.nameBytes, 46);
+            centralDir.push(cdEntry);
+
+            offset += localHeader.length + e.data.length;
           });
-        }
 
-        function downloadDocument() {
-          if (!generatedText) return;
-          const blob = new Blob([generatedText], { type: "text/plain" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = (selectedDoc?.label || "Document").replace(/\s+/g, "_") + "_LexDraft.txt";
-          a.click();
-          URL.revokeObjectURL(url);
-        }
+          const cdSize = centralDir.reduce((s, e) => s + e.length, 0);
+          const eocd = new Uint8Array(22);
+          const ev = new DataView(eocd.buffer);
+          ev.setUint32(0, 0x06054b50, true);
+          ev.setUint16(4, 0, true);
+          ev.setUint16(6, 0, true);
+          ev.setUint16(8, entries.length, true);
+          ev.setUint16(10, entries.length, true);
+          ev.setUint32(12, cdSize, true);
+          ev.setUint32(16, offset, true);
+          ev.setUint16(20, 0, true);
 
-        async function downloadWord() {
-          if (!generatedText) return;
-
-          const { Document, Packer, Paragraph, TextRun, AlignmentType } = docx;
-
-          const lines = generatedText.split("\n");
-
-          const children = lines.map(line => {
-            const trimmed = line.trim();
-
-            // Blank line = empty paragraph
-            if (!trimmed) {
-              return new Paragraph({ children: [new TextRun("")], spacing: { after: 80 } });
-            }
-
-            // Title lines (ALL CAPS, short, no punctuation at end)
-            const isTitle = trimmed === trimmed.toUpperCase() && trimmed.length < 60 && !trimmed.endsWith(".");
-            // Sub-heading (ends with colon)
-            const isSubheading = trimmed.endsWith(":") && trimmed.length < 60;
-            // Numbered clause
-            const isNumbered = /^\d+\./.test(trimmed);
-            // Signature line (underscores)
-            const isSignature = /_{5,}/.test(trimmed);
-
-            if (isTitle && !isNumbered) {
-              return new Paragraph({
-                children: [new TextRun({ text: trimmed, bold: true, size: 24, font: "Times New Roman" })],
-                alignment: AlignmentType.CENTER,
-                spacing: { before: 200, after: 100 }
-              });
-            } else if (isSubheading) {
-              return new Paragraph({
-                children: [new TextRun({ text: trimmed, bold: true, size: 22, font: "Times New Roman" })],
-                spacing: { before: 160, after: 60 }
-              });
-            } else if (isSignature) {
-              return new Paragraph({
-                children: [new TextRun({ text: trimmed, size: 22, font: "Times New Roman" })],
-                spacing: { before: 120, after: 60 }
-              });
-            } else {
-              return new Paragraph({
-                children: [new TextRun({ text: trimmed, size: 22, font: "Times New Roman" })],
-                indent: isNumbered ? { left: 360 } : {},
-                spacing: { after: 60 }
-              });
-            }
+          const allParts = [...parts, ...centralDir, eocd];
+          const totalSize = allParts.reduce((s, p) => s + p.length, 0);
+          const result = new Uint8Array(totalSize);
+          let pos = 0;
+          allParts.forEach((p) => {
+            result.set(p, pos);
+            pos += p.length;
           });
-
-          const doc = new Document({
-            sections: [{
-              properties: {
-                page: {
-                  size: { width: 12240, height: 15840 },
-                  margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 }
-                }
-              },
-              children
-            }]
-          });
-
-          const blob = await Packer.toBlob(doc);
-          saveAs(blob, (selectedDoc?.label || "Document").replace(/\s+/g, "_") + "_LexDraft.docx");
+          return result;
         }
 
-        function printDocument() {
-          if (!generatedText) return;
-          const win = window.open("", "_blank");
-          win.document.write(`<!DOCTYPE html><html><head>
-            <title>${selectedDoc?.label} — LexDraft</title>
-            <style>
-              body { font-family: Georgia, serif; font-size: 11.5pt; line-height: 1.45; margin: 40px 60px; color: #111; }
-              pre { white-space: pre-wrap; font-family: Georgia, serif; font-weight: 500; }
-              .hdr { text-align:center; border-bottom: 2px solid #111; padding-bottom: 16px; margin-bottom: 40px; }
-              .hdr h2 { font-size: 9pt; letter-spacing: 0.2em; font-weight: 600; text-transform: uppercase; }
-              .hdr h1 { font-size: 16pt; margin-top: 4px; font-weight: 700; }
-              @media print { body { margin: 50px 60px; } }
-            </style></head><body>
-            <div class="hdr">
-              <h2>LexDraft · Nigerian Legal Document Generator</h2>
-              <h1>${selectedDoc?.label}</h1>
-            </div>
-            <pre>${generatedText.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</pre>
-          </body></html>`);
-          win.document.close();
-          win.focus();
-          setTimeout(() => win.print(), 600);
-        }
+        const zipData = buildZip([
+          { name: "[Content_Types].xml", content: contentTypesXml },
+          { name: "_rels/.rels", content: relsXml },
+          { name: "word/document.xml", content: docXml },
+          { name: "word/_rels/document.xml.rels", content: wordRelsXml },
+        ]);
+
+        const blob = new Blob([zipData], {
+          type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download =
+          (selectedDoc?.label || "Document").replace(/\s+/g, "_") +
+          "_LexDraft.docx";
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function printDocument() {
+        if (!generatedText) return;
+        const win = window.open("", "_blank");
+        win.document.write(`<!DOCTYPE html><html><head>
+      <title>${selectedDoc?.label} — LexDraft</title>
+      <style>
+        body { font-family: Georgia, serif; font-size: 11.5pt; line-height: 1.45; margin: 40px 60px; color: #111; }
+        pre { white-space: pre-wrap; font-family: Georgia, serif; font-weight: 500; }
+        .hdr { text-align:center; border-bottom: 2px solid #111; padding-bottom: 16px; margin-bottom: 40px; }
+        .hdr h2 { font-size: 9pt; letter-spacing: 0.2em; font-weight: 600; text-transform: uppercase; }
+        .hdr h1 { font-size: 16pt; margin-top: 4px; font-weight: 700; }
+        @media print { body { margin: 50px 60px; } }
+      </style></head><body>
+      <div class="hdr">
+        <h2>LexDraft · Nigerian Legal Document Generator</h2>
+        <h1>${selectedDoc?.label}</h1>
+      </div>
+      <pre>${generatedText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
+    </body></html>`);
+        win.document.close();
+        win.focus();
+        setTimeout(() => win.print(), 600);
+      }
     </script>
     <!-- WHATSAPP FLOATING BUTTON -->
     <a
